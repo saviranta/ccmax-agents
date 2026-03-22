@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>agents-max</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <div class="header-left">
+      <span class="logo">agents-max</span>
+      <select id="project-select"></select>
+    </div>
+    <div class="header-right">
+      <span id="status-indicator" class="status-dot"></span>
+      <span id="clock"></span>
+    </div>
+  </header>
+  <nav id="tabs">
+    <button data-view="running" class="tab active">Running Now</button>
+    <button data-view="tasks" class="tab">Task Graph</button>
+    <button data-view="metrics" class="tab">Metrics</button>
+    <button data-view="audit" class="tab">Audit Log</button>
+  </nav>
+  <main id="content">
+    <div class="loading">Loading...</div>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>

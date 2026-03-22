@@ -1,0 +1,18 @@
+{
+  "id": "",
+  "from": "",
+  "to": "",
+  "timestamp": "",
+  "status": "pending",
+  "artifacts_produced": [],
+  "decisions_made": [],
+  "open_questions": [],
+  "recommended_next_steps": [],
+  "review": {
+    "reviewed_by": "",
+    "reviewed_at": "",
+    "issues_found": [],
+    "verdict": "",
+    "user_decision": ""
+  }
+}

@@ -1,0 +1,62 @@
+{
+  "_comment": "Task graph produced by Architect task-decomposer. Builder reads this at startup. Only Builder orchestrator writes status fields.",
+  "version": "1.0",
+  "project": "FILL_IN: project name from config.json",
+  "generated_by": "task-decomposer",
+  "generated_at": "FILL_IN: ISO timestamp",
+  "milestones": {
+    "mvp": {
+      "description": "FILL_IN: What constitutes a shippable MVP",
+      "phases": ["FILL_IN: phase IDs"]
+    },
+    "v1": {
+      "description": "FILL_IN: What constitutes V1",
+      "phases": ["FILL_IN: phase IDs"]
+    },
+    "v2": {
+      "description": "FILL_IN: What constitutes V2 (full feature set)",
+      "phases": ["FILL_IN: phase IDs"]
+    }
+  },
+  "phases": [
+    {
+      "id": "phase-1",
+      "name": "FILL_IN: Phase name",
+      "milestone": "mvp",
+      "tasks": ["FILL_IN: implementation task IDs"],
+      "integration_test_tasks": ["FILL_IN: integration test task IDs"],
+      "gate": "All phase-1 tasks done + integration tests passed before phase-2 activates"
+    }
+  ],
+  "tasks": {
+    "task-001": {
+      "_comment": "S=1-2 files, M=3-4 files, L=5 files (L tasks split by mini-architect at build time)",
+      "title": "FILL_IN",
+      "assigned_to": "FILL_IN: builder type or 'auto'",
+      "size": "S",
+      "milestone": "mvp",
+      "depends_on": [],
+      "owns_files": ["FILL_IN: exact file paths this task will create/modify — must be exhaustive"],
+      "requires": ["FILL_IN: conditional builder types if needed, e.g. 'realtime', or empty array"],
+      "may_need": ["FILL_IN: helper agents that might be needed, e.g. 'researcher', 'reviewer-typescript'"],
+      "spec_file": "task-specs/task-001.md",
+      "status": "pending",
+      "phase": "phase-1",
+      "type": "implementation"
+    },
+    "task-integration-001": {
+      "title": "Integration test: phase-1 connects end to end",
+      "assigned_to": "builder-composer",
+      "size": "S",
+      "milestone": "mvp",
+      "depends_on": ["FILL_IN: all implementation task IDs in phase-1"],
+      "owns_files": ["tests/integration/phase-1.test.ts"],
+      "requires": [],
+      "may_need": [],
+      "spec_file": "task-specs/task-integration-001.md",
+      "status": "pending",
+      "phase": "phase-1",
+      "type": "integration-test"
+    }
+  }
+}

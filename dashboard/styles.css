@@ -1,0 +1,667 @@
+/* agents-max dashboard — dark theme, no external dependencies */
+
+:root {
+  --bg: #0f172a;
+  --surface: #1e293b;
+  --surface-2: #334155;
+  --border: #475569;
+  --text: #e2e8f0;
+  --text-muted: #94a3b8;
+  --green: #22c55e;
+  --red: #ef4444;
+  --blue: #3b82f6;
+  --amber: #f59e0b;
+  --gray: #6b7280;
+  --purple: #a855f7;
+}
+
+/* ─── Reset ─── */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 14px;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas, monospace;
+  min-height: 100vh;
+}
+
+/* ─── Header ─── */
+
+header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0.75rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.logo {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.02em;
+}
+
+#project-select {
+  background: var(--surface-2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.3rem 0.6rem;
+  font-family: inherit;
+  font-size: 0.9rem;
+  cursor: pointer;
+  outline: none;
+}
+
+#project-select:focus {
+  border-color: var(--blue);
+}
+
+/* ─── Status dot ─── */
+
+.status-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--gray);
+  transition: background 0.3s;
+}
+
+.status-dot.connected {
+  background: var(--green);
+}
+
+.status-dot.stale {
+  background: var(--gray);
+}
+
+/* ─── Clock ─── */
+
+#clock {
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.85rem;
+}
+
+/* ─── Nav tabs ─── */
+
+#tabs {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 1.5rem;
+  display: flex;
+  gap: 0;
+}
+
+.tab {
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.9rem;
+  padding: 0.6rem 1rem;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.tab:hover {
+  color: var(--text);
+}
+
+.tab.active {
+  color: var(--text);
+  border-bottom-color: var(--blue);
+}
+
+/* ─── Main content ─── */
+
+#content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+.loading {
+  color: var(--text-muted);
+  padding: 2rem;
+  text-align: center;
+}
+
+.no-data {
+  color: var(--text-muted);
+  padding: 1.5rem;
+  text-align: center;
+  font-style: italic;
+}
+
+/* ─── Section headings ─── */
+
+.section-title {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.section-title:first-child {
+  margin-top: 0;
+}
+
+/* ─── Tables ─── */
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+th {
+  color: var(--text-muted);
+  font-weight: 600;
+  text-align: left;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+td {
+  padding: 0.45rem 0.75rem;
+  vertical-align: top;
+  border-bottom: 1px solid var(--surface-2);
+}
+
+tr:nth-child(even) td {
+  background: var(--surface-2);
+}
+
+tr:nth-child(odd) td {
+  background: var(--surface);
+}
+
+tr:hover td {
+  background: var(--surface-2);
+  filter: brightness(1.1);
+}
+
+.table-container {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+  overflow-x: auto;
+}
+
+/* ─── Status badges ─── */
+
+[class^="badge-"] {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  border-radius: 3px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.badge-done {
+  background: rgba(34, 197, 94, 0.15);
+  color: var(--green);
+}
+
+.badge-failed {
+  background: rgba(239, 68, 68, 0.15);
+  color: var(--red);
+}
+
+.badge-pending {
+  background: rgba(107, 114, 128, 0.15);
+  color: var(--gray);
+}
+
+.badge-in_progress {
+  background: rgba(59, 130, 246, 0.15);
+  color: var(--blue);
+}
+
+.badge-parked {
+  background: rgba(245, 158, 11, 0.15);
+  color: var(--amber);
+}
+
+.badge-blocked {
+  background: rgba(107, 114, 128, 0.15);
+  color: var(--gray);
+}
+
+.badge-success {
+  background: rgba(34, 197, 94, 0.15);
+  color: var(--green);
+}
+
+.badge-error {
+  background: rgba(239, 68, 68, 0.15);
+  color: var(--red);
+}
+
+/* ─── Phase badge ─── */
+
+.phase-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.4rem 0.85rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.phase-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.phase-dot.prototyping  { background: var(--gray); }
+.phase-dot.architecting { background: var(--amber); }
+.phase-dot.building     { background: var(--blue); }
+.phase-dot.launching    { background: var(--green); }
+
+/* ─── Progress bar ─── */
+
+.progress-bar-container {
+  background: var(--surface-2);
+  border-radius: 4px;
+  height: 8px;
+  overflow: hidden;
+  min-width: 80px;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.4s ease;
+}
+
+.progress-bar-fill.green  { background: var(--green); }
+.progress-bar-fill.blue   { background: var(--blue); }
+.progress-bar-fill.amber  { background: var(--amber); }
+.progress-bar-fill.purple { background: var(--purple); }
+.progress-bar-fill.red    { background: var(--red); }
+
+/* ─── Agent cards ─── */
+
+.agent-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.agent-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.85rem 1rem;
+}
+
+.agent-card-name {
+  color: var(--blue);
+  font-weight: 700;
+  font-size: 0.9rem;
+  margin-bottom: 0.35rem;
+}
+
+.agent-card-task {
+  color: var(--text);
+  font-size: 0.85rem;
+  margin-bottom: 0.25rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.agent-card-meta {
+  color: var(--text-muted);
+  font-size: 0.78rem;
+}
+
+/* ─── Stat cards (metrics) ─── */
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 1rem;
+  text-align: center;
+}
+
+.stat-number {
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1;
+  margin-bottom: 0.35rem;
+}
+
+.stat-label {
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* ─── Horizontal bar chart ─── */
+
+.bar-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.bar-chart-row {
+  display: grid;
+  grid-template-columns: 160px 1fr 50px;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.85rem;
+}
+
+.bar-chart-label {
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bar-chart-bar-bg {
+  background: var(--surface-2);
+  border-radius: 3px;
+  height: 14px;
+  overflow: hidden;
+}
+
+.bar-chart-bar-fill {
+  background: var(--blue);
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.4s ease;
+}
+
+.bar-chart-value {
+  color: var(--text-muted);
+  text-align: right;
+}
+
+/* ─── Audit log filter ─── */
+
+.audit-filter-wrap {
+  margin-bottom: 0.75rem;
+}
+
+#audit-filter {
+  width: 100%;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.5rem 0.75rem;
+  font-family: inherit;
+  font-size: 0.9rem;
+  outline: none;
+}
+
+#audit-filter:focus {
+  border-color: var(--blue);
+}
+
+#audit-filter::placeholder {
+  color: var(--text-muted);
+}
+
+/* ─── Diff block ─── */
+
+.diff-toggle {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.75rem;
+  padding: 0.1rem 0.4rem;
+}
+
+.diff-toggle:hover {
+  color: var(--text);
+  border-color: var(--text-muted);
+}
+
+.diff-row td {
+  padding: 0;
+}
+
+.diff-block {
+  background: var(--surface-2);
+  border-top: 1px solid var(--border);
+  font-family: inherit;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  overflow-x: auto;
+  padding: 0.75rem 1rem;
+  white-space: pre;
+  color: var(--text-muted);
+}
+
+/* ─── Handoff card ─── */
+
+.handoff-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.85rem 1rem;
+  font-size: 0.85rem;
+}
+
+.handoff-agents {
+  color: var(--blue);
+  font-weight: 600;
+  margin-bottom: 0.4rem;
+}
+
+.handoff-meta {
+  color: var(--text-muted);
+  font-size: 0.78rem;
+}
+
+/* ─── Milestone progress ─── */
+
+.milestone-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-bottom: 1.5rem;
+}
+
+.milestone-row {
+  display: grid;
+  grid-template-columns: 1fr 180px 60px;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.85rem;
+}
+
+.milestone-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.milestone-pct {
+  color: var(--text-muted);
+  text-align: right;
+  font-size: 0.8rem;
+}
+
+/* ─── Checkpoint timeline ─── */
+
+.checkpoint-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  font-size: 0.82rem;
+}
+
+.checkpoint-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.4rem 0;
+  border-bottom: 1px solid var(--surface-2);
+  color: var(--text-muted);
+}
+
+.checkpoint-hash {
+  color: var(--purple);
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.checkpoint-task {
+  color: var(--text);
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.checkpoint-time {
+  flex-shrink: 0;
+}
+
+/* ─── Phase header row ─── */
+
+.phase-header {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+/* ─── Details/summary (collapsible) ─── */
+
+details {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  margin-bottom: 0.6rem;
+  overflow: hidden;
+}
+
+summary {
+  background: var(--surface);
+  cursor: pointer;
+  padding: 0.6rem 0.9rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  user-select: none;
+}
+
+summary::-webkit-details-marker { display: none; }
+
+summary::before {
+  content: '▶';
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  transition: transform 0.15s;
+}
+
+details[open] summary::before {
+  transform: rotate(90deg);
+}
+
+details .table-container {
+  border: none;
+  border-radius: 0;
+  border-top: 1px solid var(--border);
+}
+
+/* ─── Responsive ─── */
+
+@media (max-width: 640px) {
+  header {
+    padding: 0.6rem 0.9rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  #content {
+    padding: 0.9rem;
+  }
+
+  .stat-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .agent-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .milestone-row {
+    grid-template-columns: 1fr 100px 50px;
+  }
+
+  .bar-chart-row {
+    grid-template-columns: 100px 1fr 40px;
+  }
+
+  #tabs {
+    padding: 0 0.5rem;
+    overflow-x: auto;
+  }
+
+  .tab {
+    padding: 0.6rem 0.65rem;
+    font-size: 0.82rem;
+    white-space: nowrap;
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "sandbox": {
+    "enabled": true,
+    "autoAllowBashIfSandboxed": true,
+    "filesystem": {
+      "allowRead": [
+        ".",
+        "//Users/lauri/Library/CloudStorage/Dropbox/ClaudeFolder/agents-max"
+      ],
+      "allowWrite": ["."],
+      "denyRead": [
+        "//Users/lauri/.ssh",
+        "//Users/lauri/.aws",
+        "//Users/lauri/.gnupg",
+        "//Users/lauri/.config",
+        "//Users/lauri/.netrc",
+        "//Users/lauri/.npmrc",
+        "//Users/lauri/.docker",
+        "//Users/lauri/.kube",
+        "//Users/lauri/.bash_history",
+        "//Users/lauri/.zsh_history"
+      ]
+    },
+    "network": {
+      "allowedDomains": [
+        "github.com",
+        "*.github.com",
+        "*.npmjs.org",
+        "registry.yarnpkg.com"
+      ]
+    }
+  },
+  "permissions": {
+    "deny": [
+      "Read(./.env*)",
+      "Read(./secrets/**)",
+      "Edit(//.claude/settings.json)",
+      "Edit(//Users/lauri/Library/CloudStorage/Dropbox/ClaudeFolder/agents-max/**)"
+    ],
+    "allow": [
+      "Read(**)",
+      "Edit(**)",
+      "Bash(npm *)",
+      "Bash(npx *)",
+      "Bash(git *)",
+      "Bash(node *)",
+      "Bash(python3 *)",
+      "Bash(tsc *)",
+      "Bash(playwright *)",
+      "Bash(jest *)",
+      "Bash(vitest *)"
+    ]
+  }
+}

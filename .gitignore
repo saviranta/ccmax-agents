@@ -1,0 +1,28 @@
+# ── Runtime artifacts ────────────────────────────────────────────────────────
+# Web dashboard data files (written by dashboard-server.sh at runtime)
+dashboard/data/
+
+# ── OS and editor ─────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# ── Python ────────────────────────────────────────────────────────────────────
+__pycache__/
+*.pyc
+*.pyo
+
+# ── Logs ──────────────────────────────────────────────────────────────────────
+*.log
+logs/
+
+# ── Secrets ───────────────────────────────────────────────────────────────────
+.env
+.env.*
+*.local
+
+# ── Node (if dashboard dependencies are ever added) ───────────────────────────
+node_modules/
