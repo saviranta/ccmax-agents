@@ -52,7 +52,19 @@ Each report in the library is tagged with topic, date, and a summary. The Resear
 
 ## How to Invoke
 
-Open Claude Code in any directory that has the Researcher CLAUDE.md active. Then describe what you need in plain language.
+From any directory, launch the Researcher agent:
+
+```bash
+bash ~/Library/CloudStorage/Dropbox/ClaudeFolder/agents-max/scripts/run-agent.sh researcher
+```
+
+Or directly:
+
+```bash
+claude --append-system-prompt "$(cat ~/Library/CloudStorage/Dropbox/ClaudeFolder/agents-max/agents/researcher/CLAUDE.md)"
+```
+
+Then describe what you need in plain language.
 
 Examples:
 

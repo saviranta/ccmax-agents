@@ -115,11 +115,19 @@ The Builder reads `task-graph.json` to start. The per-task specs in `tasks/` are
 
 ## How to Invoke
 
-Open Claude Code in the project directory with the Architect CLAUDE.md active:
+From your project directory, launch the Architect agent:
 
+```bash
+bash ~/Library/CloudStorage/Dropbox/ClaudeFolder/agents-max/scripts/run-agent.sh architect
 ```
-Start architecture phase
+
+Or directly:
+
+```bash
+claude --append-system-prompt "$(cat ~/Library/CloudStorage/Dropbox/ClaudeFolder/agents-max/agents/architect/CLAUDE.md)" --model opus
 ```
+
+Then say something like "Start architecture phase."
 
 The Architect will confirm it has found the Prototyper handoff, then proceed to the stack proposal.
 

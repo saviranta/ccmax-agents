@@ -110,11 +110,19 @@ Both documents are saved to `artifacts/launcher/`. You can edit them before publ
 
 ## How to Invoke
 
-Open Claude Code in the project directory with the Launcher CLAUDE.md active, after the Builder has completed:
+From your project directory (after the Builder has completed), launch the Launcher agent:
 
+```bash
+bash ~/Library/CloudStorage/Dropbox/ClaudeFolder/agents-max/scripts/run-agent.sh launcher
 ```
-Start launch process
+
+Or directly:
+
+```bash
+claude --append-system-prompt "$(cat ~/Library/CloudStorage/Dropbox/ClaudeFolder/agents-max/agents/launcher/CLAUDE.md)" --model sonnet
 ```
+
+Then say something like "Start launch process."
 
 The Launcher will confirm the handoff is valid and the prerequisites are met, then begin Step 1.
 

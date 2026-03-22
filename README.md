@@ -70,14 +70,28 @@ Prints `PASS` or `FAIL` for each check.
 
 ### 3. Run agents in sequence
 
-Open Claude Code in your project directory and invoke each agent with its skill:
+From your project directory, launch each agent using the runner script:
 
+```bash
+SCRIPTS=~/Library/CloudStorage/Dropbox/ClaudeFolder/agents-max/scripts
+
+bash $SCRIPTS/run-agent.sh researcher     # optional — research first
+bash $SCRIPTS/run-agent.sh prototyper     # define the product
+bash $SCRIPTS/run-agent.sh architect      # design the system
+bash $SCRIPTS/run-agent.sh builder        # build the code
+bash $SCRIPTS/run-agent.sh launcher       # ship it
 ```
-/researcher    # optional — research the market or a technical question
-/prototyper    # define the product
-/architect     # design the system
-/builder       # build the code
-/launcher      # ship it
+
+Or launch directly with `--append-system-prompt`:
+
+```bash
+AGENTS=~/Library/CloudStorage/Dropbox/ClaudeFolder/agents-max/agents
+
+claude --append-system-prompt "$(cat $AGENTS/researcher/CLAUDE.md)"             # optional
+claude --append-system-prompt "$(cat $AGENTS/prototyper/CLAUDE.md)" --model opus
+claude --append-system-prompt "$(cat $AGENTS/architect/CLAUDE.md)" --model opus
+claude --append-system-prompt "$(cat $AGENTS/builder/CLAUDE.md)" --model opus
+claude --append-system-prompt "$(cat $AGENTS/launcher/CLAUDE.md)" --model sonnet
 ```
 
 Each agent reads the previous handoff automatically. Each produces a handoff for the next agent to read.
@@ -172,6 +186,7 @@ Open `http://localhost:8787`
 
 | Script | Usage | What it does |
 |---|---|---|
+| `run-agent.sh` | `bash run-agent.sh <agent> [project-path]` | Launch an agent in a dedicated Claude Code session (handles model selection) |
 | `max-agents-init.sh` | `bash max-agents-init.sh` | Interactive setup — creates `.max-agents/` and `.claude/` in a project |
 | `validate.sh` | `bash validate.sh <project>` | Validates config, state, handoffs, task graph |
 | `audit-log.sh` | `bash audit-log.sh <project> log <agent> <type> <msg>` | Appends a structured event to the audit log |

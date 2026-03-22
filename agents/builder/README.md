@@ -31,15 +31,19 @@ If either file is missing, the Builder will tell you. Do not manually edit these
 
 ## How to Invoke
 
-Open Claude Code in the project directory with the Builder CLAUDE.md active:
+From your project directory, launch the Builder agent:
 
-```
-Build to MVP
+```bash
+bash ~/Library/CloudStorage/Dropbox/ClaudeFolder/agents-max/scripts/run-agent.sh builder
 ```
 
+Or directly:
+
+```bash
+claude --append-system-prompt "$(cat ~/Library/CloudStorage/Dropbox/ClaudeFolder/agents-max/agents/builder/CLAUDE.md)" --model opus
 ```
-Build to V1
-```
+
+Then state your target milestone, e.g. "Build to MVP" or "Build to V1."
 
 Replace the milestone name with whichever stable state you want to reach. The Builder will run all phases required to reach that milestone.
 

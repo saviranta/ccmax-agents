@@ -34,7 +34,7 @@ If the file is missing: return to the Prototyper session and say "Generate the h
 
 **Cause:** The Prototyper was not explicitly asked to generate a handoff. It produced artifacts during the session but never wrote the handoff file, or wrote an incomplete one.
 
-**Fix:** Open Claude Code in the project, start the Prototyper (`/prototyper`), and say:
+**Fix:** Open Claude Code in the project with the Prototyper agent loaded (see [How to start](#32-prototyper) in the user guide), and say:
 
 ```
 Generate the handoff now.
@@ -60,8 +60,8 @@ FAIL  task-graph: MISSING_DEP: task TASK-014 depends_on TASK-009 which does not 
 
 **Fix:** Have the Architect review and correct the task graph:
 
+Open Claude Code with the Architect agent loaded (see [How to start](#33-architect) in the user guide), and say:
 ```
-Open Claude Code, run /architect, say:
 "task-graph.json has a broken dependency: TASK-014 depends on TASK-009 which does not exist. Fix it."
 ```
 
@@ -121,7 +121,7 @@ mkdir -p /path/to/project/feedback/inbox
 # Write a note with explicit instructions
 echo "TASK-NNN: the failing test is auth.test.ts line 44. The issue is X. Fix by doing Y." \
   > /path/to/project/feedback/inbox/task-nnn-instructions.txt
-# Open Claude Code, run /builder, say "Process feedback"
+# Open Claude Code with the Builder agent loaded, say "Process feedback"
 ```
 
 ---
@@ -211,8 +211,8 @@ FAIL  task-graph: CYCLE detected: TASK-003 -> TASK-007 -> TASK-003
 
 **Fix:** Have the Architect fix it:
 
+Open Claude Code with the Architect agent loaded, and say:
 ```
-Open Claude Code, run /architect, say:
 "task-graph.json has a circular dependency: TASK-003 -> TASK-007 -> TASK-003. Fix the depends_on entries."
 ```
 

@@ -135,10 +135,16 @@ The `.claude/CLAUDE.md` file is pre-populated with the project name, stack, and 
 
 **How to start (interactive):**
 
-Open Claude Code in any directory. In the system prompt or conversation, invoke the Researcher skill:
+From any directory, launch the Researcher agent:
 
+```bash
+bash ~/Library/CloudStorage/Dropbox/ClaudeFolder/agents-max/scripts/run-agent.sh researcher
 ```
-/researcher
+
+Or directly:
+
+```bash
+claude --append-system-prompt "$(cat ~/Library/CloudStorage/Dropbox/ClaudeFolder/agents-max/agents/researcher/CLAUDE.md)"
 ```
 
 Then describe what you want researched.
@@ -191,10 +197,16 @@ It then creates `.max-agents/handoffs/prototyper-to-architect.json` and lists ev
 
 **How to start:**
 
-Open Claude Code in your project directory. Invoke the Prototyper skill:
+From your project directory, launch the Prototyper agent:
 
+```bash
+bash ~/Library/CloudStorage/Dropbox/ClaudeFolder/agents-max/scripts/run-agent.sh prototyper
 ```
-/prototyper
+
+Or directly:
+
+```bash
+claude --append-system-prompt "$(cat ~/Library/CloudStorage/Dropbox/ClaudeFolder/agents-max/agents/prototyper/CLAUDE.md)" --model opus
 ```
 
 Tell it which skill you want to use, e.g. "Use the Design App skill" or "Use the Spec from Reference skill."
@@ -238,10 +250,16 @@ Tell it which skill you want to use, e.g. "Use the Design App skill" or "Use the
 
 **How to start:**
 
-Open Claude Code in your project. Invoke the Architect skill:
+From your project directory, launch the Architect agent:
 
+```bash
+bash ~/Library/CloudStorage/Dropbox/ClaudeFolder/agents-max/scripts/run-agent.sh architect
 ```
-/architect
+
+Or directly:
+
+```bash
+claude --append-system-prompt "$(cat ~/Library/CloudStorage/Dropbox/ClaudeFolder/agents-max/agents/architect/CLAUDE.md)" --model opus
 ```
 
 The Architect will confirm it found the Prototyper handoff and begin. If it cannot find the handoff it will tell you and stop.
@@ -280,10 +298,16 @@ It stops automatically when the milestone boundary is reached.
 
 **How to start:**
 
-Open Claude Code in your project. Invoke the Builder skill:
+From your project directory, launch the Builder agent:
 
+```bash
+bash ~/Library/CloudStorage/Dropbox/ClaudeFolder/agents-max/scripts/run-agent.sh builder
 ```
-/builder
+
+Or directly:
+
+```bash
+claude --append-system-prompt "$(cat ~/Library/CloudStorage/Dropbox/ClaudeFolder/agents-max/agents/builder/CLAUDE.md)" --model opus
 ```
 
 State your target milestone: "Build to mvp" or "Build to v1."
@@ -311,10 +335,16 @@ Each step produces a log file in `.max-agents/artifacts/launcher/`.
 
 **How to start:**
 
-Open Claude Code in your project. Invoke the Launcher skill:
+From your project directory, launch the Launcher agent:
 
+```bash
+bash ~/Library/CloudStorage/Dropbox/ClaudeFolder/agents-max/scripts/run-agent.sh launcher
 ```
-/launcher
+
+Or directly:
+
+```bash
+claude --append-system-prompt "$(cat ~/Library/CloudStorage/Dropbox/ClaudeFolder/agents-max/agents/launcher/CLAUDE.md)" --model sonnet
 ```
 
 The Launcher will confirm the Builder handoff exists and walk you through each step one at a time.

@@ -69,7 +69,19 @@ The Architect reads this output automatically when it starts. You do not need to
 
 ## How to Invoke
 
-Open Claude Code in the initialized project directory (the one with the Prototyper CLAUDE.md active). Then describe what you want to build.
+From your initialized project directory, launch the Prototyper agent:
+
+```bash
+bash ~/Library/CloudStorage/Dropbox/ClaudeFolder/agents-max/scripts/run-agent.sh prototyper
+```
+
+Or directly:
+
+```bash
+claude --append-system-prompt "$(cat ~/Library/CloudStorage/Dropbox/ClaudeFolder/agents-max/agents/prototyper/CLAUDE.md)" --model opus
+```
+
+Then describe what you want to build.
 
 ```
 I want to build a tool that helps freelancers track their client hours and generate invoices automatically.
