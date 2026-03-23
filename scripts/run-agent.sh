@@ -16,14 +16,17 @@ AGENTS_DIR="$AGENTS_MAX_DIR/agents"
 
 # ─── Agent → model mapping ───
 
-declare -A AGENT_MODELS
-AGENT_MODELS=(
-  [researcher]="opus"
-  [prototyper]="opus"
-  [architect]="opus"
-  [builder]="opus"
-  [launcher]="sonnet"
-)
+get_model() {
+  case "$1" in
+    researcher)  echo "opus" ;;
+    prototyper)  echo "opus" ;;
+    architect)   echo "opus" ;;
+    builder)     echo "opus" ;;
+    launcher)    echo "sonnet" ;;
+    patcher)     echo "opus" ;;
+    *)           echo "" ;;
+  esac
+}
 
 # ─── Validate input ───
 
@@ -31,7 +34,7 @@ if [[ $# -lt 1 ]]; then
   echo "Usage: bash run-agent.sh <agent-name> [project-path]"
   echo ""
   echo "Available agents:"
-  for agent in researcher prototyper architect builder launcher; do
+  for agent in researcher prototyper architect builder launcher patcher; do
     echo "  $agent"
   done
   exit 1
@@ -49,14 +52,14 @@ if [[ ! -f "$AGENT_FILE" ]]; then
   echo "Error: Unknown agent '$AGENT_NAME'" >&2
   echo "" >&2
   echo "Available agents:" >&2
-  for agent in researcher prototyper architect builder launcher; do
+  for agent in researcher prototyper architect builder launcher patcher; do
     echo "  $agent" >&2
   done
   exit 1
 fi
 
-# Validate project is initialized (skip for researcher — it works anywhere)
-if [[ "$AGENT_NAME" != "researcher" && ! -d "$PROJECT_PATH/.max-agents" ]]; then
+# Validate project is initialized (skip for researcher and patcher — they work anywhere)
+if [[ "$AGENT_NAME" != "researcher" && "$AGENT_NAME" != "patcher" && ! -d "$PROJECT_PATH/.max-agents" ]]; then
   echo "Error: Project not initialized. No .max-agents/ directory found at $PROJECT_PATH" >&2
   echo "" >&2
   echo "Run the init script first:" >&2
@@ -66,7 +69,7 @@ fi
 
 # ─── Launch ───
 
-MODEL="${AGENT_MODELS[$AGENT_NAME]}"
+MODEL="$(get_model "$AGENT_NAME")"
 
 echo "Launching $AGENT_NAME agent (model: $MODEL)"
 echo "Project:  $PROJECT_PATH"

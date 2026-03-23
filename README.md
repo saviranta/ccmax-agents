@@ -1,6 +1,6 @@
 # ccmax-agents
 
-A 5-agent pipeline that takes a software product from idea to deployed code using Claude Code. Each agent has a focused role and hands off to the next via an explicit JSON file that you review before proceeding.
+A 6-agent system that takes a software product from idea to deployed code using Claude Code. Five agents form the main pipeline; the sixth (Patcher) is a fast-track shortcut for small changes. Each pipeline agent hands off to the next via an explicit JSON file that you review before proceeding.
 
 ---
 
@@ -11,6 +11,8 @@ Researcher (optional)
      │
      ▼
 Prototyper  ──handoff──►  Architect  ──handoff──►  Builder  ──handoff──►  Launcher
+
+Patcher (standalone — fast track for small changes, bypasses the pipeline)
 ```
 
 | Agent | Role |
@@ -20,6 +22,7 @@ Prototyper  ──handoff──►  Architect  ──handoff──►  Builder  
 | **Architect** | Stack, data model, API contracts, task graph |
 | **Builder** | Code implementation via specialized sub-agents |
 | **Launcher** | Local verification, PR, preview deploy, production, release notes |
+| **Patcher** | Fast-track for small changes (≤ 4 files). Assess → Scout → Arch-check → Build → Review → PR |
 
 **Handoffs are explicit.** Each agent produces a JSON file listing what it made, what decisions it took, and what questions remain open. You review and approve before the next agent starts. Nothing runs behind your back.
 
@@ -80,6 +83,9 @@ bash $SCRIPTS/run-agent.sh prototyper     # define the product
 bash $SCRIPTS/run-agent.sh architect      # design the system
 bash $SCRIPTS/run-agent.sh builder        # build the code
 bash $SCRIPTS/run-agent.sh launcher       # ship it
+
+# Or for small changes — skip the pipeline:
+bash $SCRIPTS/run-agent.sh patcher       # fast track
 ```
 
 Or launch directly with `--append-system-prompt`:
@@ -92,6 +98,9 @@ claude --append-system-prompt "$(cat $AGENTS/prototyper/CLAUDE.md)" --model opus
 claude --append-system-prompt "$(cat $AGENTS/architect/CLAUDE.md)" --model opus
 claude --append-system-prompt "$(cat $AGENTS/builder/CLAUDE.md)" --model opus
 claude --append-system-prompt "$(cat $AGENTS/launcher/CLAUDE.md)" --model sonnet
+
+# Fast track for small changes:
+claude --append-system-prompt "$(cat $AGENTS/patcher/CLAUDE.md)" --model opus
 ```
 
 Each agent reads the previous handoff automatically. Each produces a handoff for the next agent to read.
@@ -112,7 +121,8 @@ After init, a `.max-agents/` directory lives inside your project:
 │   │   ├── prototyper/      # vision, user stories, wireframes
 │   │   ├── architect/       # ADRs, data model, API contracts, task graph
 │   │   ├── builder/         # run report, build index
-│   │   └── launcher/        # verification, deploy, and release logs
+│   │   ├── launcher/        # verification, deploy, and release logs
+│   │   └── patcher/         # patch logs, escalations, architect consults
 │   ├── audit-log/           # append-only event log
 │   └── checkpoints/         # point-in-time snapshots
 └── .claude/
@@ -159,6 +169,16 @@ Ships the product. Six sequential steps, each requiring your explicit approval:
 4. Production deploy
 5. DB migrations (Supabase only)
 6. Release notes
+
+### Patcher
+Fast track for small changes. Bypasses the full pipeline when you need to change a button label, fix a link, add a tooltip, or make any change describable in 1–2 sentences. Four sub-agents run sequentially:
+
+1. **Scout** — gathers patterns, design constraints, ADR rules
+2. **Arch-Checker** — verifies architectural fit (PROCEED / PAUSE / ESCALATE)
+3. **Patch-Builder** — makes the change + tests
+4. **Patch-Reviewer** — fresh-eyes review (re-runs tests, checks quality + security)
+
+Two gates: scope confirmation (before work starts) and ship confirmation (before PR). Escalates cleanly to Architect or Prototyper if the change is bigger than expected.
 
 ---
 
@@ -209,7 +229,8 @@ ccmax-agents/
 │   ├── prototyper/          # sub-agents: flow-mapper, wireframer, ux-writer, ...
 │   ├── architect/           # sub-agents: backend, frontend, data, api, security, ...
 │   ├── builder/             # sub-agents: api, ui, data, infra, ml, reviewers, testers, ...
-│   └── launcher/            # sub-agents: local-verifier, pr-manager, deployer, ...
+│   ├── launcher/            # sub-agents: local-verifier, pr-manager, deployer, ...
+│   └── patcher/             # sub-agents: scout, arch-checker, patch-builder, patch-reviewer
 ├── templates/               # config, handoff, and settings templates
 ├── scripts/                 # init, validate, dashboard, audit, checkpoint, metrics
 ├── shared/                  # shared resources used across agents

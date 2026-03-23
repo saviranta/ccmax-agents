@@ -60,6 +60,45 @@ Repeat until the target milestone is reached, all tasks are blocked/parked, or t
    - Include: assigned builder type, task spec path (.max-agents/artifacts/architect/task-specs/task-NNN.md), conventions.md path (.max-agents/artifacts/architect/conventions.md), relevant ADR paths (.max-agents/artifacts/architect/architecture/adr/)
 ```
 
+### Post-Batch Type Validation
+
+After ALL workers in a batch return and before merging/committing any results, run cross-file type validation. This step exists because parallel agents write code in isolation — each agent's output may type-check individually but introduce cross-file inconsistencies (wrong import style, mismatched prop interfaces, incorrect function signatures).
+
+```
+1. Merge all batch worktrees into a temporary integration branch
+2. Run type-checker across the full codebase:
+   - TypeScript projects: tsc --noEmit (from the frontend/ or relevant directory)
+   - Python projects: ruff check . (or mypy if configured)
+3. If ZERO errors → proceed to Per-Task Completion Pipeline
+4. If errors found:
+   a. Group errors by originating task (match error file paths to task owns_files)
+   b. For each task with errors: dispatch bug-fixer with:
+      - Full tsc/ruff error output (filtered to that task's files)
+      - The task spec
+      - The current file state
+   c. After all bug-fixers return, re-run the type-checker
+   d. Repeat up to 3 times. If errors persist after 3 cycles, PARK the failing tasks
+      and proceed with the passing ones.
+5. Run test suite from the project root (use the project's configured test runner):
+   - Node/TS: npx vitest run or npx jest (from frontend/ or relevant directory)
+   - Python: python -m pytest
+6. If test failures found:
+   a. Group failures by category (environment/setup, assertion, mock, actual logic bug)
+   b. For environment/setup issues: fix config/setup files directly
+   c. For test-specific issues: dispatch bug-fixer with the failure output
+   d. Re-run tests after fixes, up to 3 cycles. If failures persist after 3 cycles,
+      PARK the failing tasks and proceed with the passing ones.
+7. Log type-check and test results to audit log (pass/fail, error count, fix cycles needed)
+```
+
+**Common cross-file errors this catches:**
+- Default vs named import mismatches
+- Prop interface mismatches (component written with different props than caller expects)
+- Function signature mismatches (hook/utility called with wrong number or type of arguments)
+- `exactOptionalPropertyTypes` violations (passing explicit `undefined` to optional-only props)
+- `noUncheckedIndexedAccess` violations (array indexing without null checks)
+- Missing test infrastructure (vitest config, jest-dom setup, peer dependencies)
+
 ### Per-Task Completion Pipeline
 
 Process each returning worker as it completes — do not wait for the full batch.
@@ -258,7 +297,7 @@ At startup, activate conditionals based on:
 
 **Conditional builders:** builder-ml, builder-realtime, builder-mobile, builder-api
 **Conditional reviewers:** reviewer-accessibility, reviewer-performance, reviewer-api-design, reviewer-typescript, reviewer-python
-**Conditional testers:** tester-visual, tester-performance, tester-accessibility, tester-contract
+**Conditional testers:** tester-unit-node (Node/TS projects — replaces generic tester-unit), tester-unit-python (Python projects — replaces generic tester-unit), tester-visual, tester-performance, tester-accessibility, tester-contract
 
 ---
 
@@ -293,7 +332,7 @@ bash <toolkit_root>/scripts/audit-log.sh \
   log <project_root> builder <action> <task> <status> [file] [turns_used]
 ```
 
-Log these events: `session-start`, `milestone-selected`, `batch-dispatched`, `task-done`, `task-parked`, `task-failed`, `phase-complete`, `milestone-complete`, `fix-mode-activated`, `run-report-written`, `handoff-generated`.
+Log these events: `session-start`, `milestone-selected`, `batch-dispatched`, `task-done`, `task-parked`, `task-failed`, `phase-complete`, `milestone-complete`, `fix-mode-activated`, `run-report-written`, `handoff-generated`, `type-check-passed`, `type-check-failed`.
 
 ---
 

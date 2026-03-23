@@ -50,12 +50,43 @@ import json
 import os
 import sys
 import glob
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 paths_env = os.environ["PROJECT_PATHS_ENV"]
 snapshot_out = os.environ["SNAPSHOT_OUT"]
 
 project_paths = [p for p in paths_env.split(":") if p]
+now = datetime.now(timezone.utc)
+
+SKIP_DIRS = {
+    "node_modules", ".git", "__pycache__", ".next", "dist", "build",
+    ".max-agents", "venv", ".venv", "env", ".env", "coverage", ".pytest_cache",
+}
+LOC_EXTENSIONS = {
+    ".py": "Python", ".ts": "TypeScript", ".tsx": "TypeScript",
+    ".js": "JavaScript", ".jsx": "JavaScript", ".css": "CSS", ".scss": "CSS",
+    ".sql": "SQL", ".sh": "Shell", ".json": "JSON", ".yaml": "YAML", ".yml": "YAML",
+    ".html": "HTML", ".md": "Markdown",
+}
+
+def count_loc(project_root):
+    by_lang = {}
+    for dirpath, dirnames, filenames in os.walk(project_root):
+        dirnames[:] = [d for d in dirnames if d not in SKIP_DIRS and not d.startswith(".")]
+        for fname in filenames:
+            ext = os.path.splitext(fname)[1].lower()
+            lang = LOC_EXTENSIONS.get(ext)
+            if not lang:
+                continue
+            fpath = os.path.join(dirpath, fname)
+            try:
+                with open(fpath, "r", errors="ignore") as f:
+                    lines = sum(1 for _ in f)
+                by_lang[lang] = by_lang.get(lang, 0) + lines
+            except Exception:
+                pass
+    total = sum(by_lang.values())
+    return {"total": total, "by_language": dict(sorted(by_lang.items(), key=lambda x: -x[1]))}
 
 def read_json(path):
     try:
@@ -106,11 +137,12 @@ def read_all_audit_logs(max_dir, n=200):
     return all_entries[-n:]
 
 def detect_phase(max_dir):
-    if os.path.exists(os.path.join(max_dir, "builder-to-launcher.json")):
+    handoffs_dir = os.path.join(max_dir, "handoffs")
+    if os.path.exists(os.path.join(handoffs_dir, "builder-to-launcher.json")):
         return "Launching"
-    if os.path.exists(os.path.join(max_dir, "architect-to-builder.json")):
+    if os.path.exists(os.path.join(handoffs_dir, "architect-to-builder.json")):
         return "Building"
-    if os.path.exists(os.path.join(max_dir, "prototyper-to-architect.json")):
+    if os.path.exists(os.path.join(handoffs_dir, "prototyper-to-architect.json")):
         return "Architecting"
     return "Prototyping"
 
@@ -120,9 +152,10 @@ def read_handoffs(max_dir):
         "architect-to-builder",
         "builder-to-launcher",
     ]
+    handoffs_dir = os.path.join(max_dir, "handoffs")
     handoffs = {}
     for name in handoff_names:
-        path = os.path.join(max_dir, f"{name}.json")
+        path = os.path.join(handoffs_dir, f"{name}.json")
         if os.path.exists(path):
             handoffs[name] = read_json(path)
         else:
@@ -136,15 +169,50 @@ for project_path in project_paths:
     project_name = config.get("project_name") or os.path.basename(project_path)
 
     task_graph_path = os.path.join(max_dir, "task-graph.json")
+    if not os.path.exists(task_graph_path):
+        task_graph_path = os.path.join(max_dir, "artifacts", "architect", "task-graph.json")
     task_graph = read_json(task_graph_path) if os.path.exists(task_graph_path) else {}
+
+    audit_log = read_all_audit_logs(max_dir, 200)
+
+    # Infer active agents from audit entries in the last 10 minutes
+    cutoff = now - timedelta(minutes=10)
+    agent_last_seen = {}
+    for entry in audit_log:
+        ts_str = entry.get("ts") or entry.get("timestamp")
+        if not ts_str:
+            continue
+        try:
+            ts = datetime.fromisoformat(ts_str.replace("Z", "+00:00"))
+            agent = entry.get("agent")
+            if agent and ts > cutoff:
+                if agent not in agent_last_seen or ts > agent_last_seen[agent]["ts"]:
+                    agent_last_seen[agent] = {
+                        "agent": agent,
+                        "task": entry.get("task") or entry.get("task_id") or "—",
+                        "started_at": ts_str,
+                        "ts": ts,
+                    }
+        except Exception:
+            pass
+    inferred_active = [
+        {"agent": v["agent"], "task": v["task"], "started_at": v["started_at"]}
+        for v in sorted(agent_last_seen.values(), key=lambda x: x["ts"], reverse=True)
+    ]
+
+    state = read_json(os.path.join(max_dir, "state.json"))
+    # Prefer state.json active_agents if populated, else use inferred
+    if not state.get("active_agents"):
+        state["active_agents"] = inferred_active
 
     projects[project_name] = {
         "config": config,
-        "state": read_json(os.path.join(max_dir, "state.json")),
+        "state": state,
         "task_graph": task_graph,
-        "audit_log": read_all_audit_logs(max_dir, 200),
+        "audit_log": audit_log,
         "handoffs": read_handoffs(max_dir),
         "phase": detect_phase(max_dir),
+        "loc": count_loc(project_path),
     }
 
 snapshot = {
@@ -162,7 +230,7 @@ PYEOF
 
 snapshot_loop() {
   while true; do
-    generate_snapshot 2>/dev/null || true
+    generate_snapshot || echo "[dashboard] snapshot generation failed at $(date)" >&2
     sleep 5
   done
 }
@@ -170,9 +238,25 @@ snapshot_loop() {
 snapshot_loop &
 SNAPSHOT_PID=$!
 
+# ─── Watchdog: restart loop if it dies ───
+
+watchdog_loop() {
+  while true; do
+    sleep 10
+    if ! kill -0 "$SNAPSHOT_PID" 2>/dev/null; then
+      echo "[dashboard] snapshot loop died — restarting at $(date)" >&2
+      snapshot_loop &
+      SNAPSHOT_PID=$!
+    fi
+  done
+}
+
+watchdog_loop &
+WATCHDOG_PID=$!
+
 # ─── Cleanup on exit ───
 
-trap 'kill $SNAPSHOT_PID 2>/dev/null; exit 0' SIGINT SIGTERM
+trap 'kill $SNAPSHOT_PID $WATCHDOG_PID 2>/dev/null; exit 0' SIGINT SIGTERM
 
 # ─── Start HTTP server ───
 

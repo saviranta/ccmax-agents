@@ -28,6 +28,9 @@ Reviews every completed task after convention-checker passes. Read-only. Returns
 - **Complexity**: Any function >20 lines that should be split? Any deeply nested logic that should be flattened?
 - **Missing implementation**: Any TODOs, placeholders, or stubs left in production code?
 - **Test coverage**: Do the unit tests actually test the behaviour described in the spec? Are happy path and error paths both tested?
+- **Cross-agent status code consistency**: If this task writes tests with HTTP status code assertions, verify that the asserted status codes match the actual exception handlers registered in the app's `main.py`. Specifically check for custom `@app.exception_handler` decorators that override framework defaults (e.g., FastAPI's `RequestValidationError` default is 422, but a custom handler might return 400). If a mismatch is found, flag as `NEEDS_CHANGES` with the correct status code from the actual handler.
+- **Mock patch target verification** (Python): When reviewing tests that use `unittest.mock.patch()`, verify that the patch target string matches where the function is looked up at runtime. If the test patches `app.crud.X.func` but the route file imports it at the top level with `from app.crud.X import func`, flag this as a bug — the correct target is the route module's namespace (e.g., `app.api.v1.X.func`). The only exception is late/inline imports inside function bodies, where patching the original module is correct.
+- **Mock-to-schema alignment** (Python): When reviewing tests that create mock objects returned by patched CRUD functions, verify that the mock's attributes match the Pydantic response schema's required fields (not the ORM model's fields). Check the route's `response_model` to find the schema, then verify all required fields are present in the mock with correct names.
 
 ## Verdicts
 

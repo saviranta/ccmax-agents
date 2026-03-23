@@ -54,6 +54,7 @@ When all acceptance criteria are met, write a brief completion note to a signal 
 - Every endpoint must match `api-contracts.json` exactly — no undocumented fields or routes
 - Error responses must always include actionable developer guidance
 - Breaking changes must always produce a CHANGELOG entry
+- If I wrote custom exception handlers that override the framework's default status codes (e.g. `@app.exception_handler(RequestValidationError)` returning 400 instead of FastAPI's default 422), I must document this in `conventions.md` so that test-writing agents use the correct expected codes
 
 ## Trace Block
 End every run with a `<trace>` block:

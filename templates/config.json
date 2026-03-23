@@ -25,10 +25,7 @@
     "allowed_network_domains": [
       "github.com",
       "*.npmjs.org",
-      "registry.yarnpkg.com",
-      "*.supabase.co",
-      "*.vercel.app",
-      "vercel.com"
+      "registry.yarnpkg.com"
     ]
   }
 }

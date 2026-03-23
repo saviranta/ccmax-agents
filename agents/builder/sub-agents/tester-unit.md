@@ -48,9 +48,20 @@ Per task, after reviewer-code returns PASS.
    - Extract total tests, passed, failed counts
    - For each failure: capture test name, file, error message
 
-6. Map failures back to acceptance criteria where possible — note which criteria are unverified
+6. If tests fail, fix them yourself before reporting. Categorise each failure:
+   - **Environment/setup issue** (missing test config or setup): fix the relevant config/setup files directly
+   - **Assertion incompatibility** (test framework limitation): rewrite the assertion
+   - **Broken mock**: rewrite the mock
+   - **Actual logic bug**: include in FAIL signal for bug-fixer
+   Re-run tests after each fix, up to 3 cycles. Only report FAIL for issues you cannot resolve.
 
-7. Write signal file
+7. Map failures back to acceptance criteria where possible — note which criteria are unverified
+
+8. Write signal file
+
+**Note:** The Builder orchestrator dispatches language-specific testers instead of this generic agent when the stack is known:
+- Node/TypeScript → `tester-unit-node` (jsdom polyfills, vitest/jest config, etc.)
+- Python → `tester-unit-python` (database mocking, conftest.py fixtures, FastAPI lifespan, etc.)
 
 ## Output
 

@@ -24,7 +24,10 @@ function escapeHtml(str) {
 
 function timeAgo(isoStr) {
   if (!isoStr) return '—';
-  const diff = Math.floor((Date.now() - new Date(isoStr).getTime()) / 1000);
+  // Agents write local time with a Z suffix — strip Z and treat as local time
+  // to avoid computing a diff against the wrong UTC base.
+  const localStr = isoStr.replace(/Z$/, '').replace(/[+-]\d{2}:\d{2}$/, '');
+  const diff = Math.floor((Date.now() - new Date(localStr).getTime()) / 1000);
   if (diff < 0) return 'just now';
   if (diff < 60) return `${diff}s ago`;
   const m = Math.floor(diff / 60);
@@ -37,12 +40,11 @@ function timeAgo(isoStr) {
 
 function formatTime(isoStr) {
   if (!isoStr) return '—';
-  try {
-    const d = new Date(isoStr);
-    return d.toLocaleTimeString('en-GB', { hour12: false });
-  } catch (e) {
-    return isoStr;
-  }
+  // Agents write local time with a Z suffix — extract HH:MM:SS directly
+  // to avoid double-applying the timezone offset in the browser.
+  const m = isoStr.match(/T(\d{2}:\d{2}:\d{2})/);
+  if (m) return m[1];
+  return isoStr;
 }
 
 function statusBadge(status) {
@@ -116,8 +118,14 @@ function renderRunningNow(project) {
 
   // Active agents
   html += `<div class="section-title">Active Agents</div>`;
-  const activeAgents = (project.state && project.state.active_agents) || {};
-  const agentEntries = Object.entries(activeAgents);
+  const rawActiveAgents = (project.state && project.state.active_agents) || {};
+  // Normalize: active_agents may be an array [{agent, task, started_at}] or object {name: {...}}
+  let agentEntries;
+  if (Array.isArray(rawActiveAgents)) {
+    agentEntries = rawActiveAgents.map(a => [a.agent || a.name || '?', a]);
+  } else {
+    agentEntries = Object.entries(rawActiveAgents);
+  }
 
   if (agentEntries.length === 0) {
     html += `<div class="no-data">No active agents</div>`;
@@ -227,7 +235,11 @@ function renderTaskGraph(project) {
 
   // Phases (collapsible)
   html += `<div class="section-title">Phases</div>`;
-  const phases = tg.phases || [];
+  // phases may be an array or a dict {phase-id: {name, description}}
+  const rawPhases = tg.phases || [];
+  const phases = Array.isArray(rawPhases)
+    ? rawPhases
+    : Object.entries(rawPhases).map(([id, p]) => ({ id, ...p }));
   if (phases.length === 0 && tasks.length === 0) {
     html += `<div class="no-data">No task graph data</div>`;
   } else if (phases.length > 0) {
@@ -306,6 +318,10 @@ function renderMetrics(project) {
   const failed = tasks.filter(t => (t.status || '').toLowerCase() === 'failed').length;
   const parked = tasks.filter(t => (t.status || '').toLowerCase() === 'parked').length;
 
+  const loc = project.loc || {};
+  const locTotal = loc.total || 0;
+  const locByLang = loc.by_language || {};
+
   let html = `<div class="section-title">Overview</div>
   <div class="stat-grid">
     <div class="stat-card">
@@ -326,29 +342,59 @@ function renderMetrics(project) {
     </div>
   </div>`;
 
-  // Turns by agent
-  html += `<div class="section-title">Turns by Agent</div>`;
+  // Lines of code
+  html += `<div class="section-title">Lines of Code</div>`;
+  if (locTotal === 0) {
+    html += `<div class="no-data">No source files found</div>`;
+  } else {
+    const locEntries = Object.entries(locByLang);
+    const maxLoc = locEntries.length > 0 ? locEntries[0][1] : 1;
+    html += `<div class="stat-grid" style="margin-bottom:1rem">
+      <div class="stat-card">
+        <div class="stat-number">${locTotal.toLocaleString()}</div>
+        <div class="stat-label">Total Lines</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">${locEntries.length}</div>
+        <div class="stat-label">Languages</div>
+      </div>
+    </div>`;
+    html += `<div class="bar-chart">`;
+    for (const [lang, count] of locEntries) {
+      const pct = Math.round((count / maxLoc) * 100);
+      html += `<div class="bar-chart-row">
+        <span class="bar-chart-label">${escapeHtml(lang)}</span>
+        <div class="bar-chart-bar-bg">
+          <div class="bar-chart-bar-fill" style="width:${pct}%"></div>
+        </div>
+        <span class="bar-chart-value">${count.toLocaleString()}</span>
+      </div>`;
+    }
+    html += `</div>`;
+  }
+
+  // Actions by agent
+  html += `<div class="section-title">Actions by Agent</div>`;
   const auditLog = project.audit_log || [];
-  const turnsByAgent = {};
+  const actionsByAgent = {};
   for (const entry of auditLog) {
     const agent = entry.agent || 'unknown';
-    const turns = Number(entry.turns_used) || 0;
-    turnsByAgent[agent] = (turnsByAgent[agent] || 0) + turns;
+    actionsByAgent[agent] = (actionsByAgent[agent] || 0) + 1;
   }
-  const agentTurnEntries = Object.entries(turnsByAgent).sort((a, b) => b[1] - a[1]);
-  if (agentTurnEntries.length === 0) {
-    html += `<div class="no-data">No turn data in audit log</div>`;
+  const agentActionEntries = Object.entries(actionsByAgent).sort((a, b) => b[1] - a[1]);
+  if (agentActionEntries.length === 0) {
+    html += `<div class="no-data">No audit log data</div>`;
   } else {
-    const maxTurns = agentTurnEntries[0][1] || 1;
+    const maxActions = agentActionEntries[0][1] || 1;
     html += `<div class="bar-chart">`;
-    for (const [agent, turns] of agentTurnEntries) {
-      const pct = Math.round((turns / maxTurns) * 100);
+    for (const [agent, count] of agentActionEntries) {
+      const pct = Math.round((count / maxActions) * 100);
       html += `<div class="bar-chart-row">
         <span class="bar-chart-label">${escapeHtml(agent)}</span>
         <div class="bar-chart-bar-bg">
           <div class="bar-chart-bar-fill" style="width:${pct}%"></div>
         </div>
-        <span class="bar-chart-value">${turns}</span>
+        <span class="bar-chart-value">${count}</span>
       </div>`;
     }
     html += `</div>`;
