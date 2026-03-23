@@ -20,6 +20,11 @@
       "mechanical": "haiku"
     }
   },
+  "testing": {
+    "real_db": false,
+    "real_db_driver": "",
+    "real_db_name": ""
+  },
   "security": {
     "protected_files": [".env*", "secrets/**"],
     "allowed_network_domains": [

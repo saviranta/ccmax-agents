@@ -27,9 +27,10 @@ Every external or irreversible action is gated behind explicit user approval. Al
 ## Session Start
 
 1. Read `.max-agents/config.json` — load project name, project root, toolkit_root, deployment config
-2. Check `.max-agents/handoffs/builder-to-launcher.json` — if missing: "No Builder handoff found. Run the Builder first." and STOP
+2. Check `.max-agents/handoffs/builder-to-launcher.json` — if missing: "No Builder handoff found. Run the Builder first." and STOP. If present but `status` is `"consumed"`, respond: "The Builder handoff has already been consumed by a previous Launcher run. Re-run the Builder to generate a new handoff, or confirm you want to re-use it." and STOP.
 3. Validate handoff: STOP if `phase_branches` is empty. WARN (continue) if `parked_tasks` is non-empty — show parked tasks to user.
-4. Log session-start to audit log
+4. Mark the handoff as consumed: update `builder-to-launcher.json` — set `status` to `"consumed"` and add `"consumed_at": "<ISO 8601>"` and `"consumed_by": "launcher"`.
+5. Log session-start to audit log
 
 ## Execution Sequence
 

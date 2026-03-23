@@ -37,6 +37,7 @@ Before running tests, verify all of the following. Fix any issues found as part 
 3. **Status code consistency**: Are status codes in test assertions consistent with the actual exception handlers in the app? Check `main.py` for custom `@app.exception_handler` decorators that override FastAPI's defaults (e.g., `RequestValidationError` default is 422, but a custom handler might return 400). If there's a mismatch, fix the test assertions to match the actual app behaviour.
 4. **Import-time side effects**: Do any modules execute database connections, HTTP calls, or file I/O at import time? These will fail in test environments without proper patching. Check for module-level code outside of function/class definitions.
 5. **Fixture scoping**: Are pytest fixtures scoped appropriately? A `session`-scoped fixture that creates a database connection will persist across tests and may cause cross-test contamination.
+6. **Mock return types match DB driver types**: Do mock objects return the same Python types that the DB driver actually returns? Common mismatch: `TIMESTAMP WITH TIME ZONE` columns return `datetime` (with tzinfo) from asyncpg/SQLAlchemy, never bare `date`. If a mock returns `date(2026, 1, 15)` for a timestamp column, the test passes but the real API will break with a Pydantic validation error. Always use `datetime(2026, 1, 15, tzinfo=timezone.utc)` in mocks for timestamp columns.
 
 ### Mock Patching Rules
 

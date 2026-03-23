@@ -55,6 +55,7 @@ When all acceptance criteria are met, write a brief completion note to a signal 
 - Error responses must always include actionable developer guidance
 - Breaking changes must always produce a CHANGELOG entry
 - If I wrote custom exception handlers that override the framework's default status codes (e.g. `@app.exception_handler(RequestValidationError)` returning 400 instead of FastAPI's default 422), I must document this in `conventions.md` so that test-writing agents use the correct expected codes
+- When generating Pydantic schemas from SQLAlchemy ORM models: `TIMESTAMP` / `TIMESTAMP WITH TIME ZONE` columns always return `datetime` from asyncpg — never bare `date`. If the API needs a `date`, use `field_validator("field", mode="before")` to coerce `datetime → date`. Never type a schema field as `date` without a validator when the DB column is a timestamp.
 
 ## Trace Block
 End every run with a `<trace>` block:
