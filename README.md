@@ -53,15 +53,21 @@ That path (`~/agents-max`) is what you'll reference when running the init and ut
 
 ### 1. Initialize a project
 
-```bash
-bash ~/agents-max/scripts/max-agents-init.sh
+In any Claude Code session, run:
+
+```
+/max-init
 ```
 
-The script asks:
+This walks you through setup conversationally — one question at a time:
 1. **Mode** — `new` (blank project) or `adopt` (existing codebase)
-2. **Project path** — absolute path to a git repo
-3. **Project name** — stored in `config.json`
-4. **Target stack** — optional; leave blank for Architect to decide
+2. **Project path/name** — new projects go into `ClaudeProjects/<name>`, adopt mode takes a path
+3. **Description** — one-line project description
+4. **Network domains** — any domains beyond the defaults (github.com, npmjs.org, registry.yarnpkg.com)
+
+It creates the full `.max-agents/` and `.claude/` directory structure, config files, and (in adopt mode) a baseline snapshot of the existing codebase.
+
+> **Legacy alternative:** The bash script `bash ~/agents-max/scripts/max-agents-init.sh` still works but the `/max-init` skill is the recommended approach.
 
 ### 2. Validate the setup
 
@@ -207,7 +213,7 @@ Open `http://localhost:8787`
 | Script | Usage | What it does |
 |---|---|---|
 | `run-agent.sh` | `bash run-agent.sh <agent> [project-path]` | Launch an agent in a dedicated Claude Code session (handles model selection) |
-| `max-agents-init.sh` | `bash max-agents-init.sh` | Interactive setup — creates `.max-agents/` and `.claude/` in a project |
+| `max-agents-init.sh` | `bash max-agents-init.sh` | Legacy init script — use `/max-init` skill instead |
 | `validate.sh` | `bash validate.sh <project>` | Validates config, state, handoffs, task graph |
 | `audit-log.sh` | `bash audit-log.sh <project> log <agent> <type> <msg>` | Appends a structured event to the audit log |
 | `checkpoint.sh` | `bash checkpoint.sh <project> create <label>` | Snapshot of state and handoffs |
