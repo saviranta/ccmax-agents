@@ -28,6 +28,68 @@ Patcher (standalone — fast track for small changes, bypasses the pipeline)
 
 ---
 
+## Agent Graph
+
+```mermaid
+flowchart TD
+    RES([Researcher]) -->|handoff| PRO([Prototyper])
+    PRO -->|handoff| ARC([Architect])
+    ARC -->|handoff| BLD([Builder])
+    BLD -->|handoff| LAU([Launcher])
+
+    PAT([Patcher\nstandalone])
+
+    subgraph RES_TOOLS["Researcher — Tools"]
+        direction LR
+        RT1[WebSearch] ~~~ RT2[WebFetch] ~~~ RT3[Read / Write / Edit / Glob / Grep] ~~~ RT4[Bash]
+    end
+    RES --- RES_TOOLS
+
+    subgraph PRO_SKILLS["Prototyper — Skills"]
+        direction LR
+        PS1[explore] ~~~ PS2[design-app] ~~~ PS3[design-feature] ~~~ PS4[refine-detail] ~~~ PS5[spec-from-reference]
+    end
+    subgraph PRO_SUB["Prototyper — Sub-agents"]
+        direction LR
+        PA1[flow-mapper] ~~~ PA2[screenshot-analyzer] ~~~ PA3[ux-writer] ~~~ PA4[wireframer]
+    end
+    PRO --- PRO_SKILLS
+    PRO --- PRO_SUB
+
+    subgraph ARC_SUB["Architect — Sub-agents"]
+        direction LR
+        AA1[api-architect] ~~~ AA2[backend-architect] ~~~ AA3[frontend-architect] ~~~ AA4[data-architect]
+        AA5[infra-architect] ~~~ AA6[security-architect] ~~~ AA7[mobile-architect] ~~~ AA8[realtime-architect]
+        AA9[integration-architect] ~~~ AA10[ux-designer] ~~~ AA11[data-scientist] ~~~ AA12[researcher]
+        AA13[estimator] ~~~ AA14[task-decomposer] ~~~ AA15[context-analyzer] ~~~ AA16[convention-checker]
+    end
+    ARC --- ARC_SUB
+
+    subgraph BLD_SUB["Builder — Sub-agents"]
+        subgraph BLD_BUILD["Builders"]
+            direction LR
+            BB1[builder-api] ~~~ BB2[builder-ui] ~~~ BB3[builder-data] ~~~ BB4[builder-infra]
+            BB5[builder-ml] ~~~ BB6[builder-mobile] ~~~ BB7[builder-realtime] ~~~ BB8[builder-systems]
+            BB9[builder-integration] ~~~ BB10[builder-composer] ~~~ BB11[bug-fixer] ~~~ BB12[mini-architect]
+        end
+        subgraph BLD_REV["Reviewers & Testers"]
+            direction LR
+            BR1[reviewer-code] ~~~ BR2[reviewer-security] ~~~ BR3[reviewer-performance] ~~~ BR4[reviewer-accessibility]
+            BR5[reviewer-api-design] ~~~ BR6[reviewer-design] ~~~ BR7[reviewer-python] ~~~ BR8[convention-checker]
+            BR9[tester-unit] ~~~ BR10[tester-integration] ~~~ BR11[tester-e2e] ~~~ BR12[smoke-tester]
+        end
+    end
+    BLD --- BLD_SUB
+
+    subgraph PAT_SUB["Patcher — Sub-agents"]
+        direction LR
+        PC1[scout] --> PC2[arch-checker] --> PC3[patch-builder] --> PC4[patch-reviewer]
+    end
+    PAT --- PAT_SUB
+```
+
+---
+
 ## Prerequisites
 
 - [Claude Code CLI](https://docs.anthropic.com/en/docs/claude-code) — installed and authenticated
