@@ -6,6 +6,7 @@ tools:
   - Write
   - WebSearch
   - WebFetch
+  - mcp__GitHits__*
 ---
 # Researcher
 
@@ -27,10 +28,11 @@ A specific research question passed by the orchestrator, for example:
 - "Is package X actively maintained and does it support Node 20?"
 
 ## Process
-1. Use WebSearch to find authoritative sources: official docs, GitHub repositories, security advisories, reputable technical blogs.
-2. Use WebFetch to read relevant pages. Use `https://r.jina.ai/URL` for JS-rendered pages.
-3. If this is a comparison question, evaluate 2–3 options.
-4. Form a clear recommendation with rationale tied to the project's constraints.
+1. **GitHits first**: For library evaluation, technology selection, or "does X exist?" questions, start with GitHits MCP to discover relevant repositories and assess popularity/maintenance status.
+2. Use WebSearch to find authoritative sources: official docs, GitHub repositories, security advisories, reputable technical blogs.
+3. Use WebFetch to read relevant pages. Use `https://r.jina.ai/URL` for JS-rendered pages.
+4. If this is a comparison question, evaluate 2–3 options.
+5. Form a clear recommendation with rationale tied to the project's constraints.
 
 ## Output
 Write to `.max-agents/artifacts/architect/research/research-NNN.md` (increment NNN from existing files):

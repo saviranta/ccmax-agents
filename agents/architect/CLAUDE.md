@@ -11,6 +11,7 @@ tools:
   - WebSearch
   - WebFetch
   - Agent
+  - mcp__GitHits__*
 ---
 
 # Architect Agent
@@ -67,15 +68,37 @@ bash <toolkit_root>/scripts/audit-log.sh \
   log <project_root> architect lifecycle-interview "Lifecycle interview completed" success
 ```
 
-### Step 3 — Stack recommendation
+### Step 3 — Library & tool discovery (GitHits + training data)
 
-Based on context-summary + lifecycle answers, present a concrete stack recommendation:
+For each major capability the project requires (e.g., auth, database ORM, UI components, real-time, file processing):
+
+1. **Search GitHits** for relevant libraries, frameworks, and tools.
+2. **Draw on training data** for known alternatives — especially well-established libraries, built-in platform capabilities, or simpler solutions that GitHits may not surface.
+3. **Compare candidates** from both sources. Evaluate each option on: fit-for-purpose, complexity vs. project needs, maintenance health, community adoption, and licensing.
+4. **Choose the best fit** — not necessarily the GitHits result. A GitHits result may be a partial match, overkill for the project's scale, or unavailable. A well-known library from training data may be the better choice. Pick what actually fits.
+
+**Decision log**: For every capability area evaluated, write a brief entry to `.max-agents/artifacts/architect/architecture/library-decisions.md` with this structure:
+
+```markdown
+### [Capability area, e.g. "Authentication"]
+- **GitHits candidates**: [what was found, or "no relevant results"]
+- **Training-data candidates**: [alternatives considered]
+- **Decision**: [chosen library/approach]
+- **Justification**: [why this option wins — and why others were passed over]
+- **Source**: GitHits | Training data | Both
+```
+
+This log is presented to the user at Pause 1 alongside the stack recommendation.
+
+### Step 4 — Stack recommendation
+
+Based on context-summary + lifecycle answers + library decision log, present a concrete stack recommendation:
 - For genuine tradeoffs only (where multiple options have real merit), present 2-3 options with explicit tradeoff analysis.
 - For everything else, make the call and explain the reasoning.
 
 ### PAUSE 1: Stack Approval
 
-Present: recommended stack, key architectural decisions, rationale.
+Present: recommended stack, key architectural decisions, rationale, and the library decision log.
 
 Say: "Does this direction work? Any redirects before I start detailed design?"
 
@@ -270,7 +293,8 @@ Before dispatching parallel sub-agents, confirm their output files do not overla
 │   ├── data-model.md
 │   ├── api-contracts.json
 │   ├── component-tree.md
-│   └── infrastructure.md
+│   ├── infrastructure.md
+│   └── library-decisions.md
 ├── design-system.md
 ├── storybook/
 ├── security-plan.md

@@ -205,12 +205,14 @@ Defines the product. Always interactive. Five skills:
 
 ### Architect
 Designs the system. Three explicit pause gates where you approve before it continues:
-1. Stack selection
+1. Stack selection — includes a **library decision log** comparing GitHits MCP results against training-data alternatives, with per-capability justifications
 2. Architecture review (data model, API contracts, ADRs)
 3. Task graph review (every task, its dependencies, its assigned sub-agent)
 
+**GitHits integration:** The Architect searches GitHits MCP and draws on training data for each capability area (auth, ORM, UI, etc.), compares candidates, and picks the best fit — not necessarily the GitHits result. The decision log (`library-decisions.md`) is presented at Pause 1 so you can see what was considered and why.
+
 ### Builder
-Implements the task graph. Dispatches specialized sub-agents in parallel — frontend, backend, data, API, infrastructure, testing, review — respecting the dependency graph. You set a target milestone (`mvp`, `v1`, `v2`) and it stops when the boundary is reached.
+Implements the task graph. Dispatches specialized sub-agents in parallel — frontend, backend, data, API, infrastructure, testing, review — respecting the dependency graph. You set a target milestone (`mvp`, `v1`, `v2`) and it stops when the boundary is reached. A **permission pre-flight** at session start triggers all necessary tool permission prompts upfront so the build runs uninterrupted.
 
 **Fix Mode:** Drop screenshots, error logs, or plain text notes into `feedback/inbox/` and tell the Builder "Process feedback." It classifies each item and either fixes it, routes it back to Prototyper for a design decision, or flags it for your approval if it's a scope addition.
 
