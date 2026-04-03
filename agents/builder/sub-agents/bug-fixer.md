@@ -25,6 +25,8 @@ Provided by orchestrator:
 - Current state of the owned files
 - Attempt number (1, 2, 3...) and severity classification
 
+**Prior debug signals (if present):** Before starting, check for `task-NNN.debug-escalate.json` or `task-NNN.debug-progress.md` in `.max-agents/signals/`. If either exists, a debugger has already investigated this task — read the diagnosis, hypotheses, and evidence gathered. Do not repeat work that has already been tried and documented.
+
 ## Process
 
 1. Read the task spec to understand the original intent

@@ -26,7 +26,7 @@ Read `conventions.md` completely. Then for each owned file:
 3. **Code style**: matches language-specific rules in conventions.md
 4. **Error handling**: follows patterns defined in conventions.md
 5. **API response shape**: if this file handles API responses, shape matches conventions
-6. **Commit readiness**: no TODO comments, no console.log/print debug statements, no commented-out code blocks
+6. **Commit readiness**: no TODO comments, no console.log/print debug statements, no commented-out code blocks, no remaining `[DEBUG_AGENT]` tagged lines (these are debugger instrumentation that should have been cleaned up)
 7. **Test environment completeness**: if the project has a test setup file (e.g. `test-setup.ts`, `conftest.py`), verify that any APIs or fixtures required by components under `owns_files` are present in the setup. Flag as a violation if a component uses an API that requires test-environment configuration and the setup file lacks it.
 8. **Database mock completeness** (Python/FastAPI projects): if `conftest.py` patches `async_session` or `get_db`, verify it also patches `engine` and any other module-level database objects (e.g. `SessionLocal`, connection pools). Flag if missing — incomplete mocking causes real connection attempts during tests.
 9. **Deprecated Python API usage**: Flag any use of `datetime.utcnow()` or `datetime.utcfromtimestamp()` — these are deprecated since Python 3.12. The replacements are `datetime.now(timezone.utc)` and `datetime.fromtimestamp(ts, tz=timezone.utc)`.

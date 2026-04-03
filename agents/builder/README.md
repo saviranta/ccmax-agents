@@ -34,13 +34,13 @@ If either file is missing, the Builder will tell you. Do not manually edit these
 From your project directory, launch the Builder agent:
 
 ```bash
-bash ~/Library/CloudStorage/Dropbox/ClaudeFolder/agents-max/scripts/run-agent.sh builder
+bash ~/ClaudeFolder/agents-max/scripts/run-agent.sh builder
 ```
 
 Or directly:
 
 ```bash
-claude --append-system-prompt "$(cat ~/Library/CloudStorage/Dropbox/ClaudeFolder/agents-max/agents/builder/CLAUDE.md)" --model opus
+claude --append-system-prompt "$(cat ~/ClaudeFolder/agents-max/agents/builder/CLAUDE.md)" --model opus
 ```
 
 Then state your target milestone, e.g. "Build to MVP" or "Build to V1."
@@ -77,6 +77,8 @@ The Builder maintains a pool of 20+ specialized sub-agents:
 - `builder-realtime` — WebSockets, SSE, subscriptions
 - `builder-infra` — CI/CD, Dockerfile, environment config
 - `builder-composer` — Cross-cutting coordination tasks
+- `debugger-quick` — Fast single-pass triage for unclear failures (Sonnet)
+- `debugger-deep` — Hypothesis-driven multi-iteration debugging for hard bugs (Opus)
 
 Each sub-agent receives its task spec, the relevant ADR constraints, and its owned-file list. It writes its files, runs the tests specified in the task, and reports back.
 

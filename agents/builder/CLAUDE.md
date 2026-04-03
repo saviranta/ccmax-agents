@@ -104,10 +104,9 @@ After ALL workers in a batch return and before merging/committing any results, r
 3. If ZERO errors → proceed to Per-Task Completion Pipeline
 4. If errors found:
    a. Group errors by originating task (match error file paths to task owns_files)
-   b. For each task with errors: dispatch bug-fixer with:
-      - Full tsc/ruff error output (filtered to that task's files)
-      - The task spec
-      - The current file state
+   b. For each task with errors: route based on error clarity:
+      - Clear file+line errors (type mismatch, missing property) → dispatch bug-fixer with the filtered error output, task spec, and current file state
+      - Opaque errors (segfault, import cycle, module resolution with no actionable file) → dispatch debugger-quick instead (see Debug Cycle)
    c. After all bug-fixers return, re-run the type-checker
    d. Repeat up to 3 times. If errors persist after 3 cycles, PARK the failing tasks
       and proceed with the passing ones.
@@ -228,6 +227,53 @@ Bug-fixer receives: original task spec + full reviewer/tester feedback + current
 The attempt counter never resets on the same task regardless of new issues introduced during fixes.
 
 After max attempts: PARK the task, append to the run-report parked section with full attempt history.
+
+---
+
+## Debug Cycle
+
+Two-tier debugging for failures where the root cause is unclear (no specific file+line fix from reviewer/tester).
+
+### Routing: bug-fixer vs debugger
+
+| Failure type | Route to |
+|---|---|
+| Reviewer returns NEEDS_CHANGES with specific file+line findings | bug-fixer |
+| Tester returns FAIL with clear assertion failures and suggested fix | bug-fixer |
+| Type-checker errors with clear file+line | bug-fixer |
+| Runtime crash, opaque error, segfault, import cycle | debugger-quick |
+| Tester says "actual logic bug" with no clear fix | debugger-quick |
+| Module resolution failure with no actionable file reference | debugger-quick |
+| debugger-quick escalates (produces `debug-escalate.json`) | debugger-deep |
+| debugger-deep fails (3 iterations exhausted) | PARK task |
+
+### Flow
+
+```
+Unclear failure
+  → debugger-quick (single pass, Sonnet — fast and cheap)
+     → FIXED: back to review pipeline (convention-checker → reviewer → tester)
+     → ESCALATE: produces debug-escalate.json
+        → debugger-deep (up to 3 iterations, Opus — thorough)
+           → FIXED: back to review pipeline
+           → PARKED: task parked with full diagnosis in debug-deep-result.json
+```
+
+### Signal files
+
+| Signal | Writer | Reader(s) |
+|---|---|---|
+| `task-NNN.debug-quick-result.json` | debugger-quick | Builder |
+| `task-NNN.debug-escalate.json` | debugger-quick | Builder, debugger-deep, bug-fixer |
+| `task-NNN.debug-progress.md` | debugger-deep | debugger-deep (self), Builder (visibility) |
+| `task-NNN.debug-deep-result.json` | debugger-deep | Builder |
+
+### Dispatch
+
+- debugger-quick: `isolation: "worktree"`, pass task spec + error output + owns_files
+- debugger-deep: `isolation: "worktree"`, pass task spec + error output + owns_files + escalation signal path
+
+Debuggers can read any file in the project for diagnosis but write only to `owns_files`.
 
 ---
 
@@ -377,7 +423,7 @@ bash <toolkit_root>/scripts/audit-log.sh \
   log <project_root> builder <action> <task> <status> [file] [turns_used]
 ```
 
-Log these events: `session-start`, `milestone-selected`, `batch-dispatched`, `task-done`, `task-parked`, `task-failed`, `phase-complete`, `milestone-complete`, `fix-mode-activated`, `run-report-written`, `handoff-generated`, `type-check-passed`, `type-check-failed`.
+Log these events: `session-start`, `milestone-selected`, `batch-dispatched`, `task-done`, `task-parked`, `task-failed`, `phase-complete`, `milestone-complete`, `fix-mode-activated`, `run-report-written`, `handoff-generated`, `type-check-passed`, `type-check-failed`, `debug-quick-dispatched`, `debug-quick-fixed`, `debug-escalated`, `debug-deep-dispatched`, `debug-deep-fixed`, `debug-deep-parked`.
 
 ---
 

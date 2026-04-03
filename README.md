@@ -60,6 +60,7 @@ BUILDER
 ├── builders:   builder-api · builder-ui · builder-data · builder-infra · builder-ml
 │               builder-mobile · builder-realtime · builder-systems · builder-integration
 │               builder-composer · bug-fixer · mini-architect
+├── debuggers:  debugger-quick (single-pass triage) · debugger-deep (hypothesis-driven)
 ├── reviewers:  reviewer-code · reviewer-security · reviewer-performance
 │               reviewer-accessibility · reviewer-api-design · reviewer-design
 │               reviewer-python · convention-checker
@@ -129,7 +130,7 @@ Prints `PASS` or `FAIL` for each check.
 From your project directory, launch each agent using the runner script:
 
 ```bash
-SCRIPTS=~/Library/CloudStorage/Dropbox/ClaudeFolder/agents-max/scripts
+SCRIPTS=~/ClaudeFolder/agents-max/scripts
 
 bash $SCRIPTS/run-agent.sh researcher     # optional — research first
 bash $SCRIPTS/run-agent.sh prototyper     # define the product
@@ -144,7 +145,7 @@ bash $SCRIPTS/run-agent.sh patcher       # fast track
 Or launch directly with `--append-system-prompt`:
 
 ```bash
-AGENTS=~/Library/CloudStorage/Dropbox/ClaudeFolder/agents-max/agents
+AGENTS=~/ClaudeFolder/agents-max/agents
 
 claude --append-system-prompt "$(cat $AGENTS/researcher/CLAUDE.md)"             # optional
 claude --append-system-prompt "$(cat $AGENTS/prototyper/CLAUDE.md)" --model opus
@@ -213,6 +214,8 @@ Designs the system. Three explicit pause gates where you approve before it conti
 
 ### Builder
 Implements the task graph. Dispatches specialized sub-agents in parallel — frontend, backend, data, API, infrastructure, testing, review — respecting the dependency graph. You set a target milestone (`mvp`, `v1`, `v2`) and it stops when the boundary is reached. A **permission pre-flight** at session start triggers all necessary tool permission prompts upfront so the build runs uninterrupted.
+
+**Debug Cycle:** When a failure has no clear file+line fix, the Builder routes it through a two-tier debugging system: `debugger-quick` (fast single-pass triage on Sonnet) followed by `debugger-deep` (hypothesis-driven multi-iteration investigation on Opus) if the quick pass escalates. The deep debugger instruments code with tagged logging, reproduces the failure, and systematically eliminates hypotheses until it finds the root cause.
 
 **Fix Mode:** Drop screenshots, error logs, or plain text notes into `feedback/inbox/` and tell the Builder "Process feedback." It classifies each item and either fixes it, routes it back to Prototyper for a design decision, or flags it for your approval if it's a scope addition.
 
