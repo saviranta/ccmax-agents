@@ -35,7 +35,7 @@ If pandoc is not found, inform the caller that it needs to be installed (`brew i
 ## Process
 
 1. **Read inputs.** Load all research findings, comparison tables, data analyses, and any other source files from the research output directory.
-2. **Check for skills.** The orchestrator passes the skill content when dispatching you. Look for the skill file at the researcher agent root: `~/Library/CloudStorage/Dropbox/ClaudeFolder/agents-max/agents/researcher/skills/`. If a matching skill file exists (e.g., `business-report.md`, `tech-stack-decision.md`), read and follow its structure and guidelines.
+2. **Check for skills.** The orchestrator passes the skill content when dispatching you. Look for the skill file at the researcher agent root: `<toolkit_root>/agents/researcher/skills/` (the orchestrator provides `toolkit_root` from `.max-agents/config.json` when dispatching). If a matching skill file exists (e.g., `business-report.md`, `tech-stack-decision.md`), read and follow its structure and guidelines.
 3. **Write Markdown first.** Always produce the `.md` version first — it is the source document.
 4. **Structure for conversion.** Write the Markdown so it converts cleanly to DOCX/PPTX via pandoc:
    - Use proper heading hierarchy (H1 for title, H2 for sections, H3 for subsections).

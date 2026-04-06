@@ -34,13 +34,13 @@ If either file is missing, the Builder will tell you. Do not manually edit these
 From your project directory, launch the Builder agent:
 
 ```bash
-bash ~/ClaudeFolder/agents-max/scripts/run-agent.sh builder
+bash <agents-max>/scripts/run-agent.sh builder
 ```
 
 Or directly:
 
 ```bash
-claude --append-system-prompt "$(cat ~/ClaudeFolder/agents-max/agents/builder/CLAUDE.md)" --model opus
+claude --append-system-prompt "$(cat <agents-max>/agents/builder/CLAUDE.md)" --model opus
 ```
 
 Then state your target milestone, e.g. "Build to MVP" or "Build to V1."

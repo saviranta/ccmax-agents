@@ -30,7 +30,7 @@ agents-max is a 5-agent pipeline that takes a software product from idea to depl
 ### Initialize a New Project
 
 ```bash
-bash /Users/lauri/Library/CloudStorage/Dropbox/ClaudeFolder/agents-max/scripts/max-agents-init.sh
+bash <agents-max>/scripts/max-agents-init.sh
 ```
 
 The init script is interactive. It will ask:
@@ -49,7 +49,7 @@ The init script is interactive. It will ask:
 After init, confirm everything looks right:
 
 ```bash
-bash /Users/lauri/Library/CloudStorage/Dropbox/ClaudeFolder/agents-max/scripts/validate.sh /path/to/your/project
+bash <agents-max>/scripts/validate.sh /path/to/your/project
 ```
 
 A clean run prints `PASS` for each check. Any `FAIL` line tells you exactly what is wrong and how to fix it.
@@ -131,20 +131,20 @@ The `.claude/CLAUDE.md` file is pre-populated with the project name, stack, and 
 
 **Input:** A question or topic. Nothing from `.max-agents/` is required.
 
-**Output:** Research reports saved to `~/Library/CloudStorage/Dropbox/ClaudeFolder/research/`. Files are named by date and topic, e.g. `2026-03-22-supabase-rls-patterns.md`.
+**Output:** Research reports saved to `<workspace>/research/`. Files are named by date and topic, e.g. `2026-03-22-supabase-rls-patterns.md`.
 
 **How to start (interactive):**
 
 From any directory, launch the Researcher agent:
 
 ```bash
-bash ~/Library/CloudStorage/Dropbox/ClaudeFolder/agents-max/scripts/run-agent.sh researcher
+bash <agents-max>/scripts/run-agent.sh researcher
 ```
 
 Or directly:
 
 ```bash
-claude --append-system-prompt "$(cat ~/Library/CloudStorage/Dropbox/ClaudeFolder/agents-max/agents/researcher/CLAUDE.md)"
+claude --append-system-prompt "$(cat <agents-max>/agents/researcher/CLAUDE.md)"
 ```
 
 Then describe what you want researched.
@@ -200,13 +200,13 @@ It then creates `.max-agents/handoffs/prototyper-to-architect.json` and lists ev
 From your project directory, launch the Prototyper agent:
 
 ```bash
-bash ~/Library/CloudStorage/Dropbox/ClaudeFolder/agents-max/scripts/run-agent.sh prototyper
+bash <agents-max>/scripts/run-agent.sh prototyper
 ```
 
 Or directly:
 
 ```bash
-claude --append-system-prompt "$(cat ~/Library/CloudStorage/Dropbox/ClaudeFolder/agents-max/agents/prototyper/CLAUDE.md)" --model opus
+claude --append-system-prompt "$(cat <agents-max>/agents/prototyper/CLAUDE.md)" --model opus
 ```
 
 Tell it which skill you want to use, e.g. "Use the Design App skill" or "Use the Spec from Reference skill."
@@ -253,13 +253,13 @@ Tell it which skill you want to use, e.g. "Use the Design App skill" or "Use the
 From your project directory, launch the Architect agent:
 
 ```bash
-bash ~/Library/CloudStorage/Dropbox/ClaudeFolder/agents-max/scripts/run-agent.sh architect
+bash <agents-max>/scripts/run-agent.sh architect
 ```
 
 Or directly:
 
 ```bash
-claude --append-system-prompt "$(cat ~/Library/CloudStorage/Dropbox/ClaudeFolder/agents-max/agents/architect/CLAUDE.md)" --model opus
+claude --append-system-prompt "$(cat <agents-max>/agents/architect/CLAUDE.md)" --model opus
 ```
 
 The Architect will confirm it found the Prototyper handoff and begin. If it cannot find the handoff it will tell you and stop.
@@ -301,13 +301,13 @@ It stops automatically when the milestone boundary is reached.
 From your project directory, launch the Builder agent:
 
 ```bash
-bash ~/Library/CloudStorage/Dropbox/ClaudeFolder/agents-max/scripts/run-agent.sh builder
+bash <agents-max>/scripts/run-agent.sh builder
 ```
 
 Or directly:
 
 ```bash
-claude --append-system-prompt "$(cat ~/Library/CloudStorage/Dropbox/ClaudeFolder/agents-max/agents/builder/CLAUDE.md)" --model opus
+claude --append-system-prompt "$(cat <agents-max>/agents/builder/CLAUDE.md)" --model opus
 ```
 
 State your target milestone: "Build to mvp" or "Build to v1."
@@ -338,13 +338,13 @@ Each step produces a log file in `.max-agents/artifacts/launcher/`.
 From your project directory, launch the Launcher agent:
 
 ```bash
-bash ~/Library/CloudStorage/Dropbox/ClaudeFolder/agents-max/scripts/run-agent.sh launcher
+bash <agents-max>/scripts/run-agent.sh launcher
 ```
 
 Or directly:
 
 ```bash
-claude --append-system-prompt "$(cat ~/Library/CloudStorage/Dropbox/ClaudeFolder/agents-max/agents/launcher/CLAUDE.md)" --model sonnet
+claude --append-system-prompt "$(cat <agents-max>/agents/launcher/CLAUDE.md)" --model sonnet
 ```
 
 The Launcher will confirm the Builder handoff exists and walk you through each step one at a time.
@@ -423,7 +423,7 @@ The agent will produce the missing artifacts and regenerate the handoff file. A 
 A full-screen terminal UI. Works over SSH. Auto-refreshes every 5 seconds.
 
 ```bash
-bash /Users/lauri/Library/CloudStorage/Dropbox/ClaudeFolder/agents-max/scripts/dashboard.sh /path/to/project
+bash <agents-max>/scripts/dashboard.sh /path/to/project
 ```
 
 **Keys:**
@@ -443,7 +443,7 @@ The dashboard reads `state.json`, `task-graph.json`, and the audit log directory
 A browser-based dashboard. Supports multiple projects simultaneously (one tab per project).
 
 ```bash
-bash /Users/lauri/Library/CloudStorage/Dropbox/ClaudeFolder/agents-max/scripts/dashboard-server.sh /path/to/project1 /path/to/project2
+bash <agents-max>/scripts/dashboard-server.sh /path/to/project1 /path/to/project2
 ```
 
 Then open: `http://localhost:8787`
@@ -463,7 +463,7 @@ The system tracks issues and fixes as it runs. `improvement.sh` is the interface
 Use this during any session when something goes wrong or could be better:
 
 ```bash
-bash /Users/lauri/Library/CloudStorage/Dropbox/ClaudeFolder/agents-max/scripts/improvement.sh record /path/to/project critical workflow "Builder stalls when all remaining tasks depend on a parked task"
+bash <agents-max>/scripts/improvement.sh record /path/to/project critical workflow "Builder stalls when all remaining tasks depend on a parked task"
 ```
 
 Severity levels: `critical`, `high`, `medium`, `low`
@@ -477,7 +477,7 @@ Critical issues block milestone advancement. The Builder will not generate a han
 After recording an issue, propose how to fix it:
 
 ```bash
-bash /Users/lauri/Library/CloudStorage/Dropbox/ClaudeFolder/agents-max/scripts/improvement.sh propose /path/to/project ENTRY-001 "Change task-graph generation to detect blocked clusters and surface them to the user instead of stalling silently"
+bash <agents-max>/scripts/improvement.sh propose /path/to/project ENTRY-001 "Change task-graph generation to detect blocked clusters and surface them to the user instead of stalling silently"
 ```
 
 ### Milestone Check
@@ -485,7 +485,7 @@ bash /Users/lauri/Library/CloudStorage/Dropbox/ClaudeFolder/agents-max/scripts/i
 Agents call this automatically at milestone boundaries. You can also call it manually:
 
 ```bash
-bash /Users/lauri/Library/CloudStorage/Dropbox/ClaudeFolder/agents-max/scripts/improvement.sh milestone-check /path/to/project
+bash <agents-max>/scripts/improvement.sh milestone-check /path/to/project
 ```
 
 Prints all open issues, grouped by severity. If any critical issues exist, it exits non-zero.
@@ -495,7 +495,7 @@ Prints all open issues, grouped by severity. If any critical issues exist, it ex
 Once you've made a code or config change that resolves an issue:
 
 ```bash
-bash /Users/lauri/Library/CloudStorage/Dropbox/ClaudeFolder/agents-max/scripts/improvement.sh apply /path/to/project ENTRY-001
+bash <agents-max>/scripts/improvement.sh apply /path/to/project ENTRY-001
 ```
 
 This marks the issue as resolved and **automatically appends an entry to `docs/troubleshooting.md`** with the problem description, root cause, and fix applied.
@@ -505,7 +505,7 @@ This marks the issue as resolved and **automatically appends an entry to `docs/t
 See all non-critical issues waiting for attention:
 
 ```bash
-bash /Users/lauri/Library/CloudStorage/Dropbox/ClaudeFolder/agents-max/scripts/improvement.sh review /path/to/project
+bash <agents-max>/scripts/improvement.sh review /path/to/project
 ```
 
 ---
@@ -562,11 +562,11 @@ mkdir /path/to/myapp && cd /path/to/myapp
 git init
 
 # 2. Run agents-max init
-bash /Users/lauri/Library/CloudStorage/Dropbox/ClaudeFolder/agents-max/scripts/max-agents-init.sh
+bash <agents-max>/scripts/max-agents-init.sh
 # Choose: new, /path/to/myapp, "My App", (leave stack blank)
 
 # 3. Validate
-bash /Users/lauri/Library/CloudStorage/Dropbox/ClaudeFolder/agents-max/scripts/validate.sh /path/to/myapp
+bash <agents-max>/scripts/validate.sh /path/to/myapp
 
 # 4. Open Claude Code in the project and run agents in sequence
 # /prototyper  →  /architect  →  /builder  →  /launcher
@@ -588,7 +588,7 @@ If the project is already in the pipeline (has `.max-agents/`):
 If the project is not yet in the pipeline:
 
 ```bash
-bash /Users/lauri/Library/CloudStorage/Dropbox/ClaudeFolder/agents-max/scripts/max-agents-init.sh
+bash <agents-max>/scripts/max-agents-init.sh
 # Choose: adopt, /path/to/existing-project
 ```
 
@@ -599,7 +599,7 @@ bash /Users/lauri/Library/CloudStorage/Dropbox/ClaudeFolder/agents-max/scripts/m
 open /path/to/project/.max-agents/artifacts/builder/run-report.md
 
 # 2. Open the terminal dashboard and switch to Audit Log view
-bash /Users/lauri/Library/CloudStorage/Dropbox/ClaudeFolder/agents-max/scripts/dashboard.sh /path/to/project
+bash <agents-max>/scripts/dashboard.sh /path/to/project
 # Press 4
 
 # 3. Drop the failing output into feedback inbox and let Builder fix it
@@ -611,7 +611,7 @@ mkdir -p /path/to/project/feedback/inbox
 ### Check Pipeline Health at Any Point
 
 ```bash
-bash /Users/lauri/Library/CloudStorage/Dropbox/ClaudeFolder/agents-max/scripts/validate.sh /path/to/project
+bash <agents-max>/scripts/validate.sh /path/to/project
 ```
 
 A clean run confirms: config exists, state is consistent, all handoff artifacts are present, task graph has no cycles or missing dependencies.

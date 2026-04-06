@@ -72,13 +72,13 @@ The Architect reads this output automatically when it starts. You do not need to
 From your initialized project directory, launch the Prototyper agent:
 
 ```bash
-bash ~/Library/CloudStorage/Dropbox/ClaudeFolder/agents-max/scripts/run-agent.sh prototyper
+bash <agents-max>/scripts/run-agent.sh prototyper
 ```
 
 Or directly:
 
 ```bash
-claude --append-system-prompt "$(cat ~/Library/CloudStorage/Dropbox/ClaudeFolder/agents-max/agents/prototyper/CLAUDE.md)" --model opus
+claude --append-system-prompt "$(cat <agents-max>/agents/prototyper/CLAUDE.md)" --model opus
 ```
 
 Then describe what you want to build.

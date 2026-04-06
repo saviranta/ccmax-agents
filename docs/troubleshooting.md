@@ -21,7 +21,7 @@ _Last manual update: 2026-03-22_
 ls /path/to/project/.max-agents/handoffs/
 
 # Run validate to see the full picture
-bash /Users/lauri/Library/CloudStorage/Dropbox/ClaudeFolder/agents-max/scripts/validate.sh /path/to/project
+bash <agents-max>/scripts/validate.sh /path/to/project
 ```
 
 If the file is missing: return to the Prototyper session and say "Generate the handoff now." If the file exists but `artifacts_produced` is empty, see the next entry.
@@ -68,7 +68,7 @@ Open Claude Code with the Architect agent loaded (see [How to start](#33-archite
 Alternatively, open `.max-agents/artifacts/architect/task-graph.json` directly and remove or correct the bad entry in the `depends_on` array for the affected task. Then re-run validate:
 
 ```bash
-bash /Users/lauri/Library/CloudStorage/Dropbox/ClaudeFolder/agents-max/scripts/validate.sh /path/to/project
+bash <agents-max>/scripts/validate.sh /path/to/project
 ```
 
 ---
@@ -97,7 +97,7 @@ The run-report lists parked tasks and why they were parked. Unblocking usually m
 Also log the stall for tracking:
 
 ```bash
-bash /Users/lauri/Library/CloudStorage/Dropbox/ClaudeFolder/agents-max/scripts/improvement.sh record /path/to/project high workflow "Builder stalled: all remaining tasks blocked by parked task TASK-007"
+bash <agents-max>/scripts/improvement.sh record /path/to/project high workflow "Builder stalled: all remaining tasks blocked by parked task TASK-007"
 ```
 
 ---
@@ -183,7 +183,7 @@ FAIL  config: missing required field: project_root
 **Fix:** The safest fix is to re-run init in adopt mode — it will regenerate `config.json` without touching your existing artifacts or handoffs:
 
 ```bash
-bash /Users/lauri/Library/CloudStorage/Dropbox/ClaudeFolder/agents-max/scripts/max-agents-init.sh
+bash <agents-max>/scripts/max-agents-init.sh
 # Choose: adopt, /path/to/project
 ```
 
@@ -234,14 +234,14 @@ WARN  .claude/settings.json not found — tool permissions and network allowlist
 
 ```bash
 mkdir -p /path/to/project/.claude
-cp /Users/lauri/Library/CloudStorage/Dropbox/ClaudeFolder/agents-max/templates/settings.json \
+cp <agents-max>/templates/settings.json \
    /path/to/project/.claude/settings.json
 ```
 
 Then open the file and customize the `network_allowlist` to include only the domains your project needs (e.g., your API host, Supabase URL, npm registry). Run `security-audit.sh` after editing:
 
 ```bash
-bash /Users/lauri/Library/CloudStorage/Dropbox/ClaudeFolder/agents-max/scripts/security-audit.sh /path/to/project
+bash <agents-max>/scripts/security-audit.sh /path/to/project
 ```
 
 ---
@@ -325,13 +325,13 @@ If the migration partially applied, you may need to write a compensating stateme
 **Fix:** Make sure the server is running with the correct absolute project path:
 
 ```bash
-bash /Users/lauri/Library/CloudStorage/Dropbox/ClaudeFolder/agents-max/scripts/dashboard-server.sh /absolute/path/to/project
+bash <agents-max>/scripts/dashboard-server.sh /absolute/path/to/project
 ```
 
 Verify the snapshot file is being written:
 
 ```bash
-ls -lt /Users/lauri/Library/CloudStorage/Dropbox/ClaudeFolder/agents-max/dashboard/data/
+ls -lt <agents-max>/dashboard/data/
 ```
 
 The `snapshot.json` file should have a modification time within the last few seconds. If it is not updating, check for errors in the server's terminal output.

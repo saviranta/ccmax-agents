@@ -113,13 +113,13 @@ Both documents are saved to `artifacts/launcher/`. You can edit them before publ
 From your project directory (after the Builder has completed), launch the Launcher agent:
 
 ```bash
-bash ~/Library/CloudStorage/Dropbox/ClaudeFolder/agents-max/scripts/run-agent.sh launcher
+bash <agents-max>/scripts/run-agent.sh launcher
 ```
 
 Or directly:
 
 ```bash
-claude --append-system-prompt "$(cat ~/Library/CloudStorage/Dropbox/ClaudeFolder/agents-max/agents/launcher/CLAUDE.md)" --model sonnet
+claude --append-system-prompt "$(cat <agents-max>/agents/launcher/CLAUDE.md)" --model sonnet
 ```
 
 Then say something like "Start launch process."

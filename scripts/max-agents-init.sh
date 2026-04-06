@@ -12,9 +12,9 @@ set -euo pipefail
 
 # ─── Configuration ───
 
-CLAUDE_FOLDER="$HOME/Library/CloudStorage/Dropbox/ClaudeFolder"
+AGENTS_MAX_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+CLAUDE_FOLDER="${AGENTS_MAX_BASE:-$(dirname "$AGENTS_MAX_DIR")}"
 PROJECTS_DIR="$CLAUDE_FOLDER/ClaudeProjects"
-AGENTS_MAX_DIR="$CLAUDE_FOLDER/agents-max"
 TEMPLATES_DIR="$AGENTS_MAX_DIR/templates"
 SCRIPTS_DIR="$AGENTS_MAX_DIR/scripts"
 

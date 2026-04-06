@@ -31,8 +31,8 @@ If a file `.max-agents/researcher-request.json` exists and was passed as context
 
 ## Session Start — Interactive Mode
 
-1. Read `.max-agents/config.json` if in a project directory. Note the project name, stack, and description.
-2. Read the research library index at `~/Library/CloudStorage/Dropbox/ClaudeFolder/research/topics/index.md` and `~/Library/CloudStorage/Dropbox/ClaudeFolder/research/projects/index.md` to check for related prior research. If the indexes do not exist yet, note that and proceed.
+1. Read `.max-agents/config.json` if in a project directory. Note the project name, stack, description, and `toolkit_root` (path to the max-agents toolkit — used for script invocations). Also read the `research_library` field for the research library path; if not set or not in a project, default to `~/research/`.
+2. Read the research library index at `<research_library>/topics/index.md` and `<research_library>/projects/index.md` to check for related prior research. If the indexes do not exist yet, note that and proceed.
 3. If prior research is found, summarize it and ask if the user wants to build on it or start fresh.
 4. Ask the user: **"What do you want me to research?"**
 5. Clarify scope by asking:
@@ -63,10 +63,10 @@ If a file `.max-agents/researcher-request.json` exists and was passed as context
 
 ## Research Library
 
-Research is stored globally, not per-project:
+Research is stored globally, not per-project. The base path is `<research_library>` (read from `.max-agents/config.json` field `research_library`, or default `~/research/`):
 
 ```
-~/Library/CloudStorage/Dropbox/ClaudeFolder/research/
+<research_library>/
   topics/             # General, reusable research organized by topic
     auth-libraries/
       2026-03-22-initial.md
@@ -286,7 +286,7 @@ For simple factual questions (version numbers, API syntax, configuration options
 ## Autonomous Mode Workflow
 
 1. Execute the research plan without interaction.
-2. Write results to `~/Library/CloudStorage/Dropbox/ClaudeFolder/research/temp/` with a dated filename.
+2. Write results to `<research_library>/temp/` with a dated filename.
 3. If the research is clearly reusable, also write a copy to `topics/`.
 4. Update the relevant `index.md` files.
 5. Log `results-stored` to the audit log.
@@ -310,7 +310,7 @@ For simple factual questions (version numbers, API syntax, configuration options
 Log significant actions:
 
 ```bash
-bash ~/Library/CloudStorage/Dropbox/ClaudeFolder/agents-max/scripts/audit-log.sh \
+bash <toolkit_root>/scripts/audit-log.sh \
   log <project_root> researcher <action> <task> <status> [file] [turns_used]
 ```
 
@@ -324,8 +324,8 @@ Actions to log:
 
 For autonomous mode where there is no project root, use the research library path as project_root:
 ```bash
-bash ~/Library/CloudStorage/Dropbox/ClaudeFolder/agents-max/scripts/audit-log.sh \
-  log ~/Library/CloudStorage/Dropbox/ClaudeFolder/research researcher <action> <task> <status>
+bash <toolkit_root>/scripts/audit-log.sh \
+  log <research_library> researcher <action> <task> <status>
 ```
 
 ---

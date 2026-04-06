@@ -29,7 +29,7 @@ The Researcher does not produce code or specs. It produces structured knowledge 
 Completed research is saved to:
 
 ```
-~/Library/CloudStorage/Dropbox/ClaudeFolder/research/
+<workspace>/research/
 ```
 
 Before running new research, the Researcher checks this library. If a relevant report exists and is less than 30 days old, it is reused. This prevents redundant work across projects.
@@ -55,13 +55,13 @@ Each report in the library is tagged with topic, date, and a summary. The Resear
 From any directory, launch the Researcher agent:
 
 ```bash
-bash ~/Library/CloudStorage/Dropbox/ClaudeFolder/agents-max/scripts/run-agent.sh researcher
+bash <agents-max>/scripts/run-agent.sh researcher
 ```
 
 Or directly:
 
 ```bash
-claude --append-system-prompt "$(cat ~/Library/CloudStorage/Dropbox/ClaudeFolder/agents-max/agents/researcher/CLAUDE.md)"
+claude --append-system-prompt "$(cat <agents-max>/agents/researcher/CLAUDE.md)"
 ```
 
 Then describe what you need in plain language.

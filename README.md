@@ -130,7 +130,7 @@ Prints `PASS` or `FAIL` for each check.
 From your project directory, launch each agent using the runner script:
 
 ```bash
-SCRIPTS=~/ClaudeFolder/agents-max/scripts
+SCRIPTS=<agents-max>/scripts
 
 bash $SCRIPTS/run-agent.sh researcher     # optional — research first
 bash $SCRIPTS/run-agent.sh prototyper     # define the product
@@ -145,7 +145,7 @@ bash $SCRIPTS/run-agent.sh patcher       # fast track
 Or launch directly with `--append-system-prompt`:
 
 ```bash
-AGENTS=~/ClaudeFolder/agents-max/agents
+AGENTS=<agents-max>/agents
 
 claude --append-system-prompt "$(cat $AGENTS/researcher/CLAUDE.md)"             # optional
 claude --append-system-prompt "$(cat $AGENTS/prototyper/CLAUDE.md)" --model opus

@@ -19,8 +19,9 @@ if [[ -z "$COMMAND" || -z "$PROJECT_ROOT" ]]; then
 fi
 
 # Path containment check
+AGENTS_MAX_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 REAL_ROOT=$(realpath "$PROJECT_ROOT" 2>/dev/null || echo "$PROJECT_ROOT")
-ALLOWED_BASE="$HOME/Library/CloudStorage/Dropbox/ClaudeFolder"
+ALLOWED_BASE="${AGENTS_MAX_BASE:-$(dirname "$AGENTS_MAX_DIR")}"
 if [[ "$REAL_ROOT" != "$ALLOWED_BASE"/* ]]; then
   echo "Error: Project root must be within ClaudeFolder" >&2
   exit 1

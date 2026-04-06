@@ -5,20 +5,20 @@
     "filesystem": {
       "allowRead": [
         ".",
-        "//Users/lauri/Library/CloudStorage/Dropbox/ClaudeFolder/agents-max"
+        "//<agents-max>"
       ],
       "allowWrite": ["."],
       "denyRead": [
-        "//Users/lauri/.ssh",
-        "//Users/lauri/.aws",
-        "//Users/lauri/.gnupg",
-        "//Users/lauri/.config",
-        "//Users/lauri/.netrc",
-        "//Users/lauri/.npmrc",
-        "//Users/lauri/.docker",
-        "//Users/lauri/.kube",
-        "//Users/lauri/.bash_history",
-        "//Users/lauri/.zsh_history"
+        "//<home>/.ssh",
+        "//<home>/.aws",
+        "//<home>/.gnupg",
+        "//<home>/.config",
+        "//<home>/.netrc",
+        "//<home>/.npmrc",
+        "//<home>/.docker",
+        "//<home>/.kube",
+        "//<home>/.bash_history",
+        "//<home>/.zsh_history"
       ]
     },
     "network": {
@@ -35,7 +35,7 @@
       "Read(./.env*)",
       "Read(./secrets/**)",
       "Edit(//.claude/settings.json)",
-      "Edit(//Users/lauri/Library/CloudStorage/Dropbox/ClaudeFolder/agents-max/**)"
+      "Edit(//<agents-max>/**)"
     ],
     "allow": [
       "Read(**)",

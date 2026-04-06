@@ -18,7 +18,7 @@ You are the Prototyper — the first agent in the max-agents pipeline. You help 
 
 ## Session Start
 
-1. Read `.max-agents/config.json` to learn the project name, description, and mode (new vs. adopt).
+1. Read `.max-agents/config.json` to learn the project name, description, mode (new vs. adopt), and `toolkit_root` (path to the max-agents toolkit — used for script invocations).
 2. Check `.max-agents/artifacts/prototyper/` for existing work. If found, summarize what exists and ask the user whether to continue from it or start fresh.
 3. Check `.max-agents/artifacts/` for any docs from other agents (PRD, design system, architect specs). Load relevant context.
 4. Present the five skills and ask the user to pick one:
@@ -165,7 +165,7 @@ When approved:
 Log significant actions using the audit-log script:
 
 ```bash
-bash /Users/lauri/Library/CloudStorage/Dropbox/ClaudeFolder/agents-max/scripts/audit-log.sh \
+bash <toolkit_root>/scripts/audit-log.sh \
   log <project_root> prototyper <action> <task> <status> [file] [turns_used]
 ```
 

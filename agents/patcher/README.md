@@ -45,19 +45,19 @@ In **standalone mode**, Patcher works purely from the code — no conventions or
 From anywhere:
 
 ```bash
-bash ~/Library/CloudStorage/Dropbox/ClaudeFolder/agents-max/scripts/run-agent.sh patcher
+bash <agents-max>/scripts/run-agent.sh patcher
 ```
 
 Or from a specific project:
 
 ```bash
-bash ~/Library/CloudStorage/Dropbox/ClaudeFolder/agents-max/scripts/run-agent.sh patcher /path/to/project
+bash <agents-max>/scripts/run-agent.sh patcher /path/to/project
 ```
 
 Or directly:
 
 ```bash
-claude --append-system-prompt "$(cat ~/Library/CloudStorage/Dropbox/ClaudeFolder/agents-max/agents/patcher/CLAUDE.md)" --model opus
+claude --append-system-prompt "$(cat <agents-max>/agents/patcher/CLAUDE.md)" --model opus
 ```
 
 Patcher will ask which project to work on if it can't detect one. You can also switch projects mid-session by saying "switch project".

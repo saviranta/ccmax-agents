@@ -10,7 +10,7 @@
 set -euo pipefail
 
 AGENTS_MAX_DIR="$(cd "$(dirname "$0")/.." && pwd)"
-ALLOWED_BASE="$HOME/Library/CloudStorage/Dropbox/ClaudeFolder"
+ALLOWED_BASE="${AGENTS_MAX_BASE:-$(dirname "$AGENTS_MAX_DIR")}"
 DASHBOARD_DIR="$AGENTS_MAX_DIR/dashboard"
 SNAPSHOT_FILE="$DASHBOARD_DIR/data/snapshot.json"
 PORT=8787

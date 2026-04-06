@@ -18,7 +18,7 @@ done
 AGENTS_MAX_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 SCRIPTS_DIR="$AGENTS_MAX_DIR/scripts"
 TEMPLATES_DIR="$AGENTS_MAX_DIR/templates"
-CLAUDE_FOLDER="$HOME/Library/CloudStorage/Dropbox/ClaudeFolder"
+CLAUDE_FOLDER="${AGENTS_MAX_BASE:-$(dirname "$AGENTS_MAX_DIR")}"
 
 # ─── Tracking ───
 

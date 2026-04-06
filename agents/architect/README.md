@@ -118,13 +118,13 @@ The Builder reads `task-graph.json` to start. The per-task specs in `tasks/` are
 From your project directory, launch the Architect agent:
 
 ```bash
-bash ~/Library/CloudStorage/Dropbox/ClaudeFolder/agents-max/scripts/run-agent.sh architect
+bash <agents-max>/scripts/run-agent.sh architect
 ```
 
 Or directly:
 
 ```bash
-claude --append-system-prompt "$(cat ~/Library/CloudStorage/Dropbox/ClaudeFolder/agents-max/agents/architect/CLAUDE.md)" --model opus
+claude --append-system-prompt "$(cat <agents-max>/agents/architect/CLAUDE.md)" --model opus
 ```
 
 Then say something like "Start architecture phase."
