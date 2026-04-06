@@ -83,13 +83,20 @@ Repeat until the target milestone is reached, all tasks are blocked/parked, or t
 
 ```
 1. Find tasks: status=pending AND all depends_on tasks have status=done
+   — This includes ALL task types: implementation, convention-check, code-review,
+     integration-test, security-review, design-review, e2e-test
 2. Filter to tasks within the target milestone only (check task.milestone field)
 3. Pre-flight: verify no two tasks in the batch share owned files (owns_files field)
-4. Route L-sized tasks → mini-architect first (splits to M/S, adds sub-tasks to graph, logs)
-5. For auto-assigned tasks: make assignment decision based on task content, log choice to mini-architect-log.md
-6. Dispatch the entire ready batch as parallel Agent tool calls in a SINGLE response
-   - Each call: isolation: "worktree", pass sub-agent .md content + task spec path + project root
-   - Include: assigned builder type, task spec path (.max-agents/artifacts/architect/task-specs/task-NNN.md), conventions.md path (.max-agents/artifacts/architect/conventions.md), relevant ADR paths (.max-agents/artifacts/architect/architecture/adr/)
+4. Route L-sized implementation tasks → mini-architect first (splits to M/S, adds sub-tasks to graph, logs)
+5. For auto-assigned implementation tasks: make assignment decision based on task content, log choice to mini-architect-log.md
+6. Route each task to the correct sub-agent based on its assigned_to / type:
+   — Implementation tasks → the builder sub-agent matching assigned_to (builder-frontend, builder-backend, etc.)
+   — Quality gate tasks → the review/test sub-agent matching assigned_to (see Per-Task Quality Gate Pipeline)
+   — Phase/milestone gate tasks → the corresponding review/test sub-agent (see Phase Boundary)
+7. Dispatch the entire ready batch as parallel Agent tool calls in a SINGLE response
+   - For implementation tasks: isolation: "worktree", pass sub-agent .md content + task spec path + project root
+   - For review/test tasks: pass sub-agent .md content + task spec path (which references parent task's files)
+   - Include: task spec path (.max-agents/artifacts/architect/task-specs/task-NNN.md), conventions.md path (.max-agents/artifacts/architect/conventions.md), relevant ADR paths (.max-agents/artifacts/architect/architecture/adr/)
 ```
 
 ### Post-Batch Type Validation
@@ -101,7 +108,7 @@ After ALL workers in a batch return and before merging/committing any results, r
 2. Run type-checker across the full codebase:
    - TypeScript projects: tsc --noEmit (from the frontend/ or relevant directory)
    - Python projects: ruff check . (or mypy if configured)
-3. If ZERO errors → proceed to Per-Task Completion Pipeline
+3. If ZERO errors → proceed (quality gate tasks will be dispatched in the next batch cycle)
 4. If errors found:
    a. Group errors by originating task (match error file paths to task owns_files)
    b. For each task with errors: route based on error clarity:
@@ -130,45 +137,54 @@ After ALL workers in a batch return and before merging/committing any results, r
 - `noUncheckedIndexedAccess` violations (array indexing without null checks)
 - Missing test infrastructure (vitest config, jest-dom setup, peer dependencies)
 
-### Per-Task Completion Pipeline
+### Per-Task Completion
 
-Process each returning worker as it completes — do not wait for the full batch.
+Unit tests are part of each implementation task — the builder sub-agent writes and runs them before signaling completion. An implementation task is not done until its unit tests pass.
 
+When an implementation worker returns successfully:
 ```
-Step 1: convention-checker
-  → dispatch sub-agents/convention-checker.md with task output files + conventions.md
-  → FAIL: dispatch bug-fixer with violation report, re-run convention-checker after fix
-  → PASS: proceed to step 2
+  → merge worktree to phase branch (max-agents/phase-N)
+  → update task status to "done" in task-graph.json
+  → commit: "[task-NNN] task title"
+  → log to audit log
+```
 
-Step 2: reviewer-code
-  → dispatch sub-agents/reviewer-code.md (read-only, no worktree needed)
-  → NEEDS_CHANGES: dispatch bug-fixer, severity determines max attempts (Critical=5, Standard=3, Polish=2)
-    → counter never resets; after max attempts: PARK task, log to run-report
-  → FAIL: PARK immediately, log to run-report
-  → PASS: proceed to step 3
-
-Step 3: tester-unit
-  → dispatch sub-agents/tester-unit.md
-  → FAIL: dispatch bug-fixer (same severity-relative attempt limits)
-  → PASS: merge worktree to phase branch (max-agents/phase-N)
-           update task status to "done" in task-graph.json
-           commit: "[task-NNN] task title"
-           log to audit log
+If the worker reports unit test failures it could not resolve:
+```
+  → dispatch bug-fixer (severity-relative attempt limits: Critical=5, Standard=3, Polish=2)
+  → counter never resets; after max attempts: PARK the task, log to run-report
+  → after fix, re-dispatch the implementation worker
 ```
 
 ### Phase Boundary
 
-When ALL implementation tasks in a phase reach status=done:
+When ALL implementation tasks in a phase have status=done (unit tests passed as part of each task), the phase gate tasks become ready via normal dependency resolution and are dispatched in the next batch.
+
+Phase gate tasks are explicit entries in the task graph with their own task specs. The Builder dispatches them like any other task:
 
 ```
-1. Dispatch sub-agents/tester-integration.md
-   → FAIL: dispatch mini-architect to decompose fix tasks, add to graph, re-run integration tests
-   → PASS: proceed
+1. convention-check task becomes ready (depends on all implementation tasks in the phase)
+   → dispatch sub-agents/convention-checker.md with the task spec
+   → FAIL: dispatch bug-fixer with violation report, re-dispatch convention-check after fix
+   → PASS: update task status to "done", code-review becomes ready
 
-2. Dispatch in PARALLEL: sub-agents/reviewer-security.md + sub-agents/reviewer-design.md
-   + any active conditional reviewers (reviewer-accessibility, reviewer-typescript, etc.)
+2. code-review task becomes ready (depends on convention-check)
+   → dispatch sub-agents/reviewer-code.md (read-only, no worktree needed)
+   → NEEDS_CHANGES: dispatch bug-fixer, severity determines max attempts (Critical=5, Standard=3, Polish=2)
+     → counter never resets; after max attempts: PARK, log to run-report
+   → FAIL: PARK immediately, log to run-report
+   → PASS: update task status to "done", integration-test becomes ready
+
+3. integration-test task becomes ready (depends on code-review)
+   → dispatch sub-agents/tester-integration.md with the task spec
+   → FAIL: dispatch mini-architect to decompose fix tasks, add to graph, re-run integration tests
+   → PASS: update task status to "done", proceed
+
+4. security-review + design-review tasks become ready (depend on integration-test task)
+   → dispatch in PARALLEL: sub-agents/reviewer-security.md + sub-agents/reviewer-design.md
+     + any active conditional reviewers (reviewer-accessibility, reviewer-typescript, etc.)
    → NEEDS_CHANGES: dispatch bug-fixer for each finding
-   → PASS: proceed
+   → PASS: update task status to "done", proceed
 
 3. Real-DB smoke test (opt-in — only if config.testing.real_db is true):
    Dispatch the appropriate DB-specific smoke tester based on config.testing.real_db_driver:
@@ -187,12 +203,13 @@ Phase branch max-agents/phase-N is now ready for the Launcher to PR.
 
 ### Milestone Boundary
 
-When all tasks in the milestone are done AND the phase boundary has passed:
+When all phase gate tasks in the milestone are done, the milestone's e2e-test task becomes ready via normal dependency resolution:
 
 ```
-1. Dispatch sub-agents/tester-e2e.md
+1. e2e-test task becomes ready (depends on all phase gate tasks in the milestone)
+   → dispatch sub-agents/tester-e2e.md with the task spec
    → PARTIAL/FAIL: dispatch mini-architect + bug-fixer cycle
-   → PASS: log milestone complete
+   → PASS: update task status to "done", log milestone complete
 
 2. If this is the TARGET milestone → graceful stop → write run-report + build-index
 ```
@@ -274,6 +291,31 @@ Unclear failure
 - debugger-deep: `isolation: "worktree"`, pass task spec + error output + owns_files + escalation signal path
 
 Debuggers can read any file in the project for diagnosis but write only to `owns_files`.
+
+---
+
+## Direct Review & Test Requests
+
+When the user asks you to review, test, or check code outside the normal build loop, dispatch the appropriate specialised sub-agent. Do NOT attempt to review or test code yourself — you have dedicated sub-agents for every review and test type.
+
+| User request | Dispatch |
+|---|---|
+| "review this code" / "code review" / "review task NNN" | `sub-agents/reviewer-code.md` |
+| "check conventions" / "lint" / "style check" | `sub-agents/convention-checker.md` |
+| "run unit tests" / "test this" / "test task NNN" | `sub-agents/tester-unit.md` (or `tester-unit-node.md` / `tester-unit-python.md` based on stack) |
+| "run integration tests" / "integration test" | `sub-agents/tester-integration.md` |
+| "security review" / "check security" | `sub-agents/reviewer-security.md` |
+| "design review" / "check design system" | `sub-agents/reviewer-design.md` |
+| "run e2e tests" / "end to end test" | `sub-agents/tester-e2e.md` |
+| "debug this" / "investigate this failure" | `sub-agents/debugger-quick.md` (escalates to `debugger-deep.md` if needed) |
+| "fix this" / "fix the review findings" | `sub-agents/bug-fixer.md` |
+| "accessibility review" | `sub-agents/reviewer-accessibility.md` (if activated) |
+| "performance review" / "check performance" | `sub-agents/reviewer-performance.md` (if activated) |
+| "typescript review" / "check types" | `sub-agents/reviewer-typescript.md` (if activated) |
+
+Pass the sub-agent: the relevant file paths or task spec, conventions.md path, and any context the user provided (error output, specific concerns, etc.).
+
+If the task graph contains explicit review/test tasks (type: `security-review`, `design-review`, `integration-test`, `e2e-test`), dispatch them through the same sub-agents using the task spec for context. Process their results through the same pass/fail pipeline as the build loop — on NEEDS_CHANGES or FAIL, dispatch bug-fixer or park as appropriate.
 
 ---
 
@@ -366,14 +408,26 @@ Write `.max-agents/handoffs/builder-to-launcher.json`:
 
 Use the Agent tool. For parallel batches: multiple Agent tool calls in ONE response.
 
-For builder workers: include `isolation: "worktree"` to get an isolated git worktree.
-For reviewers/testers: no worktree needed (read-only or test-only).
+For builder workers (implementation tasks): include `isolation: "worktree"` to get an isolated git worktree.
+For reviewers/testers (quality gate, phase gate, milestone gate tasks): no worktree needed (read-only or test-only).
+
+**Sub-agent routing by task type and assigned_to:**
+
+| Task type | assigned_to | Sub-agent file | Scope |
+|---|---|---|---|
+| implementation | builder-frontend, builder-backend, etc. | `sub-agents/builder-*.md` matching the assigned_to name | Per task (unit tests built-in) |
+| convention-check | convention-checker | `sub-agents/convention-checker.md` | Per phase |
+| code-review | reviewer-code | `sub-agents/reviewer-code.md` | Per phase |
+| integration-test | builder-integration | `sub-agents/tester-integration.md` | Per phase |
+| security-review | reviewer-security | `sub-agents/reviewer-security.md` | Per phase |
+| design-review | reviewer-design | `sub-agents/reviewer-design.md` | Per phase |
+| e2e-test | builder-integration | `sub-agents/tester-e2e.md` | Per milestone |
 
 Pass each sub-agent:
 - The contents of its `.md` file as the prompt
 - The project root path
-- The specific task spec file path (for workers)
-- The owned file paths
+- The specific task spec file path (every task type has a spec, including review/test tasks)
+- The owned file paths (for implementation tasks) or the parent task's owned file paths (for quality gate tasks — referenced in the gate task's spec)
 - Path to `conventions.md` and relevant ADRs
 
 ---

@@ -67,12 +67,54 @@ Use these canonical builder names:
 **Step 6 — Security mitigations resolution**
 Read security-plan.md "Mitigations Mapped to Tasks" section. For each mitigation with a placeholder task ID (task-TBD-SEC-NNN): find the task in your graph that implements this mitigation and update the task spec to include it in the Specification and Acceptance Criteria. Record the real task ID in a lookup so the convention-checker can verify the security plan was fully covered.
 
-**Step 7 — Phase gate tasks**
-After every phase's implementation tasks, add one integration test task:
-- type: "integration-test"
-- assigned_to: builder-integration
-- depends_on: all implementation tasks in that phase
-- Gate rule: all phase N tasks done + integration-test task passed before phase N+1 activates
+**Step 7 — Unit tests are part of implementation tasks**
+Do NOT generate separate unit-test tasks. Unit tests are built and run by the builder sub-agent as part of each implementation task. The task spec's Test Requirements section defines what tests to write and run. An implementation task is not complete until its unit tests pass.
+
+Every implementation task spec MUST include a Test Requirements section with specific test cases. The builder sub-agent writes the tests, runs them, and only signals completion when they pass.
+
+**Step 8 — Phase gate and milestone gate tasks**
+After every phase's implementation tasks, add review and test gate tasks:
+
+**Phase boundary gates** (add all five for every phase):
+
+1. Convention check task:
+   - type: "convention-check"
+   - assigned_to: convention-checker
+   - depends_on: all implementation tasks in that phase
+   - spec: check ALL files produced by this phase's implementation tasks against conventions.md
+
+2. Code review task:
+   - type: "code-review"
+   - assigned_to: reviewer-code
+   - depends_on: the phase's convention-check task
+   - spec: review ALL files produced by this phase's implementation tasks for correctness, logic errors, error handling, naming, dead code, complexity, and test coverage
+
+3. Integration test task:
+   - type: "integration-test"
+   - assigned_to: builder-integration
+   - depends_on: the phase's code-review task
+
+4. Security review task:
+   - type: "security-review"
+   - assigned_to: reviewer-security
+   - depends_on: the phase's integration-test task
+   - spec: reference security-plan.md mitigations relevant to this phase's tasks
+
+5. Design review task:
+   - type: "design-review"
+   - assigned_to: reviewer-design
+   - depends_on: the phase's integration-test task
+   - spec: reference design-system.md and relevant component/UI tasks in this phase
+
+Gate rule: all phase N implementation tasks done (with unit tests passing) + convention-check passed + code-review passed + integration-test passed + security-review passed + design-review passed before phase N+1 activates.
+
+**Milestone boundary gates** (add for each milestone — MVP, V1, V2):
+
+1. E2E test task:
+   - type: "e2e-test"
+   - assigned_to: builder-integration
+   - depends_on: all phase gate tasks within this milestone
+   - spec: end-to-end flows from the Prototyper user stories that this milestone covers
 
 **Step 8 — Milestone assignment**
 - MVP: the minimum set of tasks that produces a working, demonstrable product matching the core user stories. No polish, no V2 features.
@@ -95,7 +137,8 @@ Write task-graph.json first, then write one task-spec file per task. Task specs 
   "milestones": {
     "mvp": {
       "description": "<what MVP delivers>",
-      "phases": ["phase-1"]
+      "phases": ["phase-1"],
+      "e2e_test_task": "task-NNN"
     },
     "v1": {
       "description": "<what V1 delivers beyond MVP>",
@@ -113,7 +156,9 @@ Write task-graph.json first, then write one task-spec file per task. Task specs 
       "milestone": "mvp",
       "tasks": ["task-001", "task-002"],
       "integration_test_tasks": ["task-010"],
-      "gate": "All phase-1 tasks complete and task-010 passed before phase-2 activates"
+      "security_review_tasks": ["task-011"],
+      "design_review_tasks": ["task-012"],
+      "gate": "All phase-1 implementation tasks complete + task-010 passed + task-011 passed + task-012 passed before phase-2 activates"
     }
   ],
   "tasks": {
@@ -123,7 +168,7 @@ Write task-graph.json first, then write one task-spec file per task. Task specs 
       "size": "S",
       "milestone": "mvp",
       "phase": "phase-1",
-      "type": "implementation",
+      "type": "implementation | convention-check | code-review | integration-test | security-review | design-review | e2e-test",
       "depends_on": [],
       "owns_files": ["<exact file paths this task creates or modifies>"],
       "requires": [],
